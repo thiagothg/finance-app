@@ -13,3 +13,8 @@ Route::prefix('auth')->group(function () {
 Route::get('/user/me', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
