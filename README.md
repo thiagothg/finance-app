@@ -1,3 +1,38 @@
+# Family Finance App
+
+Family Finance is a personal finance management system designed to help families track expenses, accounts and investments.
+
+## Architecture
+
+Mobile application communicates with a REST API.
+
+Flutter Mobile App
+↓
+Laravel REST API
+↓
+PostgreSQL Database
+
+## Main Features
+
+- accounts management
+- transactions tracking
+- spending by person
+- family financial dashboard
+- investments tracking
+- CSV bank import
+
+## Tech Stack
+
+Backend
+- Laravel
+- PostgreSQL
+- Docker
+
+Mobile
+- Flutter
+- Riverpod
+- Dio
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
