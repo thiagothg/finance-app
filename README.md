@@ -24,7 +24,8 @@ PostgreSQL Database
 ## Tech Stack
 
 Backend
-- Laravel
+- Laravel 12
+- FrankenPHP (application server)
 - PostgreSQL
 - Docker
 
@@ -32,6 +33,49 @@ Mobile
 - Flutter
 - Riverpod
 - Dio
+
+## Docker / FrankenPHP
+
+This project uses [FrankenPHP](https://frankenphp.dev) as the application server, running inside Docker with a multi-stage build.
+
+### Quick Start
+
+```bash
+# Build and start all services
+docker compose up --build -d
+
+# View logs
+docker compose logs app -f
+
+# Run tests
+docker compose exec app php artisan test
+
+# Stop services
+docker compose down
+```
+
+### Ports
+
+| Service     | Port  | Description    |
+|-------------|-------|----------------|
+| App (HTTP)  | 80    | FrankenPHP     |
+| App (HTTPS) | 443   | FrankenPHP     |
+| PostgreSQL  | 5432  | Database       |
+| Redis       | 6379  | Cache          |
+| Meilisearch | 7700  | Search engine  |
+| Mailpit     | 8025  | Mail dashboard |
+
+### Docker Structure
+
+```
+Dockerfile            # Multi-stage build (deps → app)
+docker/
+├── Caddyfile         # FrankenPHP server config
+├── php.ini           # PHP settings (OPcache, timezone, limits)
+└── start.sh          # Entrypoint (cache, migrate, start)
+compose.yaml          # All services (app, pgsql, redis, etc.)
+```
+
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
