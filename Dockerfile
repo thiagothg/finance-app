@@ -23,6 +23,8 @@ RUN composer dump-autoload --optimize
 # ==============================================================================
 FROM dunglas/frankenphp:php8.4-bookworm AS app
 
+ARG APP_ENV=production
+
 # Install PHP extensions required by Laravel + project dependencies
 RUN install-php-extensions \
     pdo_pgsql \
@@ -35,6 +37,11 @@ RUN install-php-extensions \
     gd \
     bcmath \
     exif
+
+# Conditionally install composer if environment is local
+RUN if [ "$APP_ENV" = "local" ]; then \
+        install-php-extensions @composer; \
+    fi
 
 # Set working directory (FrankenPHP expects /app)
 WORKDIR /app
