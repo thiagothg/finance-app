@@ -112,7 +112,7 @@ test('authenticated user can logout', function () {
     $token = $user->createToken('auth-token')->plainTextToken;
 
     $response = $this->withHeaders([
-        'Authorization' => 'Bearer ' . $token,
+        'Authorization' => 'Bearer '.$token,
     ])->postJson('/api/auth/logout');
 
     $response->assertStatus(200)

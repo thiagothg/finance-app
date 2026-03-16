@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Enums\HouseholdMemberRole;
 use App\Models\Household;
+use App\Models\HouseholdMember;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\HouseholdMember>
+ * @extends Factory<HouseholdMember>
  */
 class HouseholdMemberFactory extends Factory
 {

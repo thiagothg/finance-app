@@ -76,3 +76,8 @@ FrankenPHP App → Mailpit (dev email)
 PHP configuration managed via docker/php.ini (OPcache, timezone, limits).
 
 Entrypoint (docker/start.sh) runs config/route/view caching and migrations on container start.
+
+## Git
+
+- **Always** use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. Example: `feat: add start workout session endpoint`, `fix: workout plan validation`, `docs: update architecture rules`.
+- **Never** make commit without explicit permission from the user. Always wait for the user to ask for a commit.

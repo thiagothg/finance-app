@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Account;
-use App\Models\User;
-use App\Models\Transaction;
 use App\Enums\AccountType;
+use App\Models\Account;
+use App\Models\Transaction;
+use App\Models\User;
 
 it('can create an account', function () {
     $account = Account::factory()->create();

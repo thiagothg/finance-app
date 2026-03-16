@@ -1,9 +1,9 @@
 <?php
 
+use App\Enums\CategoryType;
 use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
-use App\Enums\CategoryType;
 
 it('can create a category', function () {
     $category = Category::factory()->create();

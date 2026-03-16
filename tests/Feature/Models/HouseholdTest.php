@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\Category;
 use App\Models\Household;
 use App\Models\User;
-use App\Models\Category;
 
 it('can create a household', function () {
     $household = Household::factory()->create();
