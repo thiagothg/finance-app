@@ -17,7 +17,7 @@ class AuthRepository
     /**
      * Create a new user.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function createUser(array $data): User
     {

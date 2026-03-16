@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Enums\TransactionType;
+use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\TransactionFactory> */
+    /** @use HasFactory<TransactionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -32,21 +33,27 @@ class Transaction extends Model
         ];
     }
 
+    /*** Relations ***/
+
+    /** @return BelongsTo<Account, $this> */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'account_id');
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function spender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'spender_user_id');
     }
 
+    /** @return BelongsTo<Account, $this> */
     public function toAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'to_account_id');

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\HouseholdMemberRole;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Household;
@@ -29,7 +30,7 @@ class DatabaseSeeder extends Seeder
             HouseholdMember::factory()->create([
                 'household_id' => $household->id,
                 'user_id' => $household->owner_id,
-                'role' => \App\Enums\HouseholdMemberRole::Owner,
+                'role' => HouseholdMemberRole::Owner,
             ]);
 
             // Add 1-3 random users as other members
@@ -38,7 +39,7 @@ class DatabaseSeeder extends Seeder
                 HouseholdMember::factory()->create([
                     'household_id' => $household->id,
                     'user_id' => $member->id,
-                    'role' => fake()->randomElement([\App\Enums\HouseholdMemberRole::Member, \App\Enums\HouseholdMemberRole::Viewer]),
+                    'role' => fake()->randomElement([HouseholdMemberRole::Member, HouseholdMemberRole::Viewer]),
                 ]);
             }
 
@@ -50,7 +51,7 @@ class DatabaseSeeder extends Seeder
             // Create accounts for users in this household (using random members)
             $allHouseholdUsers = $household->members()->pluck('user_id');
             $accounts = collect();
-            
+
             foreach ($allHouseholdUsers as $userId) {
                 $accounts = $accounts->merge(
                     Account::factory(2)->create([

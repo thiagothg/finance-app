@@ -5,10 +5,12 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -49,21 +51,38 @@ class User extends Authenticatable
         ];
     }
 
+    /** @return HasMany<Household, $this> */
     public function households(): HasMany
     {
         return $this->hasMany(Household::class, 'owner_id');
     }
 
-    public function householdMembers(): HasMany
+    /** @return HasOne<HouseholdMember, $this> */
+    public function householdMember(): HasOne
     {
-        return $this->hasMany(HouseholdMember::class);
+        return $this->hasOne(HouseholdMember::class);
     }
 
+    /** @return HasOneThrough<Household, HouseholdMember, $this> */
+    public function household(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Household::class,
+            HouseholdMember::class,
+            'user_id',
+            'id',
+            'id',
+            'household_id'
+        );
+    }
+
+    /** @return HasMany<Account, $this> */
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
     }
 
+    /** @return HasMany<Transaction, $this> */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'spender_user_id');

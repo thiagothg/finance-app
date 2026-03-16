@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HouseholdController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -10,11 +11,17 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
-Route::get('/user/me', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user/me', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::apiResource('households', HouseholdController::class)->except(['show', 'destroy']);
+    Route::get('/households/{household}/members', [HouseholdController::class, 'members'])->name('households.members.index');
+    Route::post('/households/{household}/members', [HouseholdController::class, 'addMember'])->name('households.members.store');
+    Route::delete('/households/{household}/members/{user}', [HouseholdController::class, 'removeMember'])->name('households.members.destroy');
+});
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
-
