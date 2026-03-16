@@ -87,4 +87,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class, 'spender_user_id');
     }
+
+    /** @return HasMany<Category, $this> */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
 }

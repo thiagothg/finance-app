@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\CategoryType;
 use App\Models\Category;
 use App\Models\Household;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,6 +17,7 @@ class CategoryFactory extends Factory
     {
         return [
             'household_id' => Household::factory(),
+            'user_id' => User::factory(),
             'name' => fake()->word().' Category',
             'type' => fake()->randomElement([CategoryType::Income, CategoryType::Expense]),
             'icon' => fake()->word(),

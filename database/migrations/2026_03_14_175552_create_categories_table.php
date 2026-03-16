@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('household_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('type');
             $table->string('icon')->nullable();
             $table->string('color')->nullable();
+            $table->decimal('budget', 12, 2)->nullable();
+            $table->unique(['household_id', 'type', 'name']);
             $table->timestamps();
         });
     }

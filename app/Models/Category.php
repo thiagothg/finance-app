@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property CategoryType $type
+ * @property string|null $icon
+ * @property string|null $color
+ * @property string|null $budget
+ * @property int $user_id
+ * @property int $household_id
+ */
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
@@ -16,16 +26,19 @@ class Category extends Model
 
     protected $fillable = [
         'household_id',
+        'user_id',
         'name',
         'type',
         'icon',
         'color',
+        'budget',
     ];
 
     protected function casts(): array
     {
         return [
             'type' => CategoryType::class,
+            'budget' => 'decimal:2',
         ];
     }
 
@@ -41,5 +54,11 @@ class Category extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
