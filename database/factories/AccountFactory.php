@@ -20,6 +20,10 @@ class AccountFactory extends Factory
             'type' => fake()->randomElement([AccountType::Checking, AccountType::Savings, AccountType::Cash]),
             'initial_balance' => fake()->randomFloat(2, 0, 10000),
             'currency' => 'BRL',
+            'is_closed' => false,
+            'close_at' => null,
+            'balance' => fake()->randomFloat(2, 0, 10000),
+            'bank' => fake()->company(),
         ];
     }
 }

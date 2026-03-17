@@ -5,12 +5,13 @@ use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
+use Illuminate\Contracts\Auth\Authenticatable;
+use Tests\TestCase;
 
 test('user can list their household with member spending', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $user1 */
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -39,7 +40,9 @@ test('user can list their household with member spending', function () {
 });
 
 test('user cannot create multiple households', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $user */
     $user = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $user->id]);
     $household->members()->create(['user_id' => $user->id, 'role' => HouseholdMemberRole::Owner]);
@@ -50,7 +53,9 @@ test('user cannot create multiple households', function () {
 });
 
 test('user can create a household if they have none', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $user */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson('/api/households', ['name' => 'My Home']);
@@ -64,9 +69,12 @@ test('user can create a household if they have none', function () {
 });
 
 test('member can update household name but viewer cannot', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $owner = User::factory()->create();
+    /** @var Authenticatable $member */
     $member = User::factory()->create();
+
+    /** @var Authenticatable $viewer */
     $viewer = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -86,9 +94,13 @@ test('member can update household name but viewer cannot', function () {
 });
 
 test('add members enforces single household constraint and permissions', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
+    /** @var Authenticatable $otherUser */
     $otherUser = User::factory()->create();
+    /** @var Authenticatable $viewerUser */
     $viewerUser = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -124,9 +136,15 @@ test('add members enforces single household constraint and permissions', functio
 });
 
 test('remove members enforces permissions and preserves owner', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
+
+    /** @var Authenticatable $member1 */
     $member1 = User::factory()->create();
+
+    /** @var Authenticatable $member2 */
     $member2 = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);

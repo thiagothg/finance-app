@@ -43,8 +43,6 @@ Endpoint for manage categories
 - POST /api/categories - Create a new category
     - Request body: name, type, icon, color
     - Return the created category
-- GET /api/categories/{id} - Get a category
-    - Return the category
 - PUT /api/categories/{id} - Update a category
     - Request body: name, type, icon, color
     - Return the updated category

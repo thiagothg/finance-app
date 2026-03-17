@@ -6,12 +6,13 @@ use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
+use Illuminate\Contracts\Auth\Authenticatable;
+use Tests\TestCase;
 
 test('user can list categories with total spend grouped by type', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -46,7 +47,9 @@ test('user can list categories with total spend grouped by type', function () {
 });
 
 test('user can filter categories by type', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -62,7 +65,9 @@ test('user can filter categories by type', function () {
 });
 
 test('user can create a category with budget', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -88,7 +93,9 @@ test('user can create a category with budget', function () {
 });
 
 test('creating category with duplicate name and type within same household fails', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -111,7 +118,9 @@ test('creating category with duplicate name and type within same household fails
 });
 
 test('updating category when transactions exist fails', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -131,7 +140,9 @@ test('updating category when transactions exist fails', function () {
 });
 
 test('deleting category when transactions exist fails', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -145,10 +156,15 @@ test('deleting category when transactions exist fails', function () {
 });
 
 test('only owner/member or creator can update category', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
+    /** @var Authenticatable $member */
     $member = User::factory()->create();
+    /** @var Authenticatable $viewer */
     $viewer = User::factory()->create();
+    /** @var Authenticatable $alien */
     $alien = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);

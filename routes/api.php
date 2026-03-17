@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HouseholdController;
@@ -23,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/households/{household}/members/{user}', [HouseholdController::class, 'removeMember'])->name('households.members.destroy');
 
     Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('accounts', AccountController::class);
 });
 
 Route::get('/health', function () {

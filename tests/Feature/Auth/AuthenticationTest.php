@@ -1,10 +1,11 @@
 <?php
 
 use App\Models\User;
+use function Pest\Laravel\{postJson, withHeaders, assertDatabaseCount};
+use function Pest\Faker\fake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
-use function Pest\Laravel\{postJson, withHeaders, assertDatabaseCount, assertDatabaseHas};
 
 /*
 |--------------------------------------------------------------------------
@@ -32,13 +33,14 @@ test('user can login with valid credentials', function () {
 });
 
 test('login fails with invalid credentials', function () {
-    $user = User::factory()->create([
-        'email' => 'test@example.com',
+    $email = fake()->unique()->email;
+    User::factory()->create([
+        'email' => $email,
         'password' => 'password123',
     ]);
 
     $response = postJson('/api/auth/login', [
-        'email' => 'test@example.com',
+        'email' => $email,
         'password' => 'wrong-password',
     ]);
 
