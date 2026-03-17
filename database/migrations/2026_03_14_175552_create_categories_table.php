@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CategoryType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,15 +14,16 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('household_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('household_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->restrictOnDelete();
             $table->string('name');
-            $table->string('type');
+            $table->enum('type', array_column(CategoryType::cases(), 'value'));
             $table->string('icon')->nullable();
             $table->string('color')->nullable();
             $table->decimal('budget', 12, 2)->nullable();
             $table->unique(['household_id', 'type', 'name']);
-            $table->timestamps();
+            $table->timestampsTz();
+            $table->softDeletesTz();
         });
     }
 

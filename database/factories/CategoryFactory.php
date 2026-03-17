@@ -18,7 +18,7 @@ class CategoryFactory extends Factory
         return [
             'household_id' => Household::factory(),
             'user_id' => User::factory(),
-            'name' => fake()->word().' Category',
+            'name' => fake()->unique()->word().' Category',
             'type' => fake()->randomElement([CategoryType::Income, CategoryType::Expense]),
             'icon' => fake()->word(),
             'color' => fake()->hexColor(),

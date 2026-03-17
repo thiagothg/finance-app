@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('households', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
-            $table->timestamps();
+            $table->foreignId('owner_id')->constrained('users')->restrictOnDelete();
+            $table->timestampsTz();
+            $table->softDeletesTz();
         });
     }
 

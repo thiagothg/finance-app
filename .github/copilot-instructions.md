@@ -32,6 +32,7 @@ You are an expert in Laravel, PHP, and related web development technologies.
   - Create and maintain proper database migrations and seeders.
   - Prefer readable and explicit code.
   - Avoid large controllers.
+  - **Always** create folder for organize files, like the feature folder. For example, if you are creating a new feature, create a folder for it and put all the files related to that feature in that folder. Services, Controllers, Requests, Resources, etc.
 
 
   Laravel Best Practices
@@ -98,9 +99,15 @@ You are an expert in Laravel, PHP, and related web development technologies.
         - Attributes like status, types, or roles MUST use Enums from `App\Enums`.
         - Always include name `Enum` in the name of the enum class.
     * Testing
-      - Use Pest for unit testing.
-      - Use Laravel Pint for code formatting.
-      - Phpstan must be used for static analysis.
+      - **Always** use Pest for unit testing.
+      - **Always** use Laravel Pint for code formatting.
+      - **Always** use PHPStan for static analysis on all implementations.
+    * Migrations
+      - **Always** use foreign key on migrations.
+      - **Always** use soft deletes on migrations.
+      - **Always** use timestamps on migrations.
+      - **Always** use indexes on migrations.
+      - **Never** use cascade on foreign keys.
 
   Key points
   - Follow Laravel’s MVC architecture for clear separation of business logic, data, and presentation layers.
@@ -116,7 +123,6 @@ You are an expert in Laravel, PHP, and related web development technologies.
   - Create folder when necessary to separate feature or things that are related.
   - **Always** use comment the function to explain what it does.
 
-
 ### MCPs
 
 - **Always** use the Context7 MCP to search for documentation and websites
@@ -126,9 +132,17 @@ You are an expert in Laravel, PHP, and related web development technologies.
 
 ```php
 // Controller Example
+/**
+* Example of a controller method 
+* @return TransactionResource
+**/
 public function store(StoreTransactionRequest $request, TransactionService $service): TransactionResource
 {
     $transaction = $service->create($request->validated());
     return new TransactionResource($transaction);
 }
 ```
+
+# Commands
+
+- Run commands on container: `docker compose exec -t app php artisan [command]`
