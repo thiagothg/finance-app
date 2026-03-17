@@ -10,20 +10,10 @@ services:
             - '${APP_HTTPS_PORT:-443}:443'
             - '${APP_HTTPS_PORT:-443}:443/udp'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+            - '${XDEBUG_PORT:-9003}:9003'
         environment:
             APP_ENV: '${APP_ENV:-local}'
             APP_DEBUG: '${APP_DEBUG:-true}'
-            DB_CONNECTION: pgsql
-            DB_HOST: pgsql
-            DB_PORT: 5432
-            DB_DATABASE: '${DB_DATABASE}'
-            DB_USERNAME: '${DB_USERNAME}'
-            DB_PASSWORD: '${DB_PASSWORD:-password}'
-            REDIS_HOST: redis
-            REDIS_PORT: 6379
-            MAIL_HOST: mailpit
-            MAIL_PORT: 1025
-            MEILISEARCH_HOST: 'http://meilisearch:7700'
         volumes:
             - '.:/app'
             - caddy_data:/data

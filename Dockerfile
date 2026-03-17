@@ -38,9 +38,9 @@ RUN install-php-extensions \
     bcmath \
     exif
 
-# Conditionally install composer if environment is local
+# Conditionally install Xdebug if environment is local
 RUN if [ "$APP_ENV" = "local" ]; then \
-        install-php-extensions @composer; \
+        install-php-extensions xdebug; \
     fi
 
 # Set working directory (FrankenPHP expects /app)
