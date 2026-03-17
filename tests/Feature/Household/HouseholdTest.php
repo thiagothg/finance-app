@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('user can list their household with member spending', function () {
+    /** @var \Tests\TestCase $this */
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -38,6 +39,7 @@ test('user can list their household with member spending', function () {
 });
 
 test('user cannot create multiple households', function () {
+    /** @var \Tests\TestCase $this */
     $user = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $user->id]);
     $household->members()->create(['user_id' => $user->id, 'role' => HouseholdMemberRole::Owner]);
@@ -48,6 +50,7 @@ test('user cannot create multiple households', function () {
 });
 
 test('user can create a household if they have none', function () {
+    /** @var \Tests\TestCase $this */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson('/api/households', ['name' => 'My Home']);
@@ -61,6 +64,7 @@ test('user can create a household if they have none', function () {
 });
 
 test('member can update household name but viewer cannot', function () {
+    /** @var \Tests\TestCase $this */
     $owner = User::factory()->create();
     $member = User::factory()->create();
     $viewer = User::factory()->create();
@@ -82,6 +86,7 @@ test('member can update household name but viewer cannot', function () {
 });
 
 test('add members enforces single household constraint and permissions', function () {
+    /** @var \Tests\TestCase $this */
     $owner = User::factory()->create();
     $otherUser = User::factory()->create();
     $viewerUser = User::factory()->create();
@@ -119,6 +124,7 @@ test('add members enforces single household constraint and permissions', functio
 });
 
 test('remove members enforces permissions and preserves owner', function () {
+    /** @var \Tests\TestCase $this */
     $owner = User::factory()->create();
     $member1 = User::factory()->create();
     $member2 = User::factory()->create();
