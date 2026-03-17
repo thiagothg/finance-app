@@ -63,11 +63,18 @@ You are an expert in Laravel, PHP, and related web development technologies.
       - Always return `JsonResource` (or collections of them) for API responses.
     * Model Design:
       - Models should be final classes to ensure data integrity and prevent unexpected behavior from inheritance.
-    * Services:
-      - Create a Services folder within the app directory.
-      - Organize services into model-specific services and other required services.
+    * Services (The "Business Brain"):
+      - Create a `Services` folder within the `app` directory.
       - Service classes should be final and read-only.
-      - Use services for complex business logic, keeping controllers thin.
+      - Responsibility: COORDINATION and BUSINESS LOGIC.
+      - Use services for enforcing permissions, calculating totals, triggering events, and multi-step processes.
+      - Services should call Repositories or Eloquent directly.
+    * Repositories (The "Data Drawer"):
+      - Responsibility: DATA ACCESS only.
+      - ONLY use Repositories when:
+        * Queries are extremely complex or long (clutters the Service).
+        * There is a need to abstract multiple data sources (e.g., Cache + DB).
+      - Avoid "Boilerplate Repositories" that just wrap simple Eloquent methods. Prefer using Eloquent directly in the Service for 80% of cases.
     * Routing:
       - Maintain consistent and organized routes.
       - Create separate route files for each major model or feature area.
