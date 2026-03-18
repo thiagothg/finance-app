@@ -23,6 +23,12 @@ it('lists transactions with grouping and meta data', function () {
     $account = Account::factory()->create(['user_id' => $user->id]);
     $category = Category::factory()->create(['user_id' => $user->id]);
 
+    $household = \App\Models\Household::factory()->create(['owner_id' => $user->id]);
+    \App\Models\HouseholdMember::factory()->create([
+        'user_id' => $user->id,
+        'household_id' => $household->id,
+    ]);
+
     Transaction::factory()->create([
         'spender_user_id' => $user->id,
         'account_id' => $account->id,

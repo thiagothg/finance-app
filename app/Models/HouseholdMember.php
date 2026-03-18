@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property-read Household $household
  * @property-read User $user
  */
-class HouseholdMember extends Model
+final class HouseholdMember extends Model
 {
     /** @use HasFactory<HouseholdMemberFactory> */
     use HasFactory;

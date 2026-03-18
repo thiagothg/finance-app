@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, HouseholdMember> $members
  * @property-read User $owner
  */
-class Household extends Model
+final class Household extends Model
 {
     /** @use HasFactory<HouseholdFactory> */
     use HasFactory, SoftDeletes;

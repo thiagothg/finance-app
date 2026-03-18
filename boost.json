@@ -1,0 +1,17 @@
+{
+    "agents": [
+        "copilot",
+        "cursor",
+        "codex",
+        "claude_code"
+    ],
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "sail": false,
+    "skills": [
+        "pulse-development",
+        "pest-testing"
+    ]
+}

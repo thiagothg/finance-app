@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-final class AuthService
+final readonly class AuthService
 {
     public function __construct() {}
 

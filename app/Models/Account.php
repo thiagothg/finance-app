@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Account extends Model
+final class Account extends Model
 {
     /** @use HasFactory<AccountFactory> */
     use HasFactory, SoftDeletes;
