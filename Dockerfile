@@ -49,9 +49,6 @@ WORKDIR /app
 # Copy custom PHP configuration
 COPY docker/php.ini $PHP_INI_DIR/conf.d/99-app.ini
 
-# Copy Caddyfile
-COPY docker/Caddyfile /etc/caddy/Caddyfile
-
 # Copy application code from deps stage
 COPY --from=deps /app /app
 

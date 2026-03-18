@@ -3,12 +3,24 @@
 namespace App\Models;
 
 use App\Enums\TransactionType;
+use Carbon\Carbon;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $account_id
+ * @property int|null $category_id
+ * @property int $spender_user_id
+ * @property float|string $amount
+ * @property TransactionType $type
+ * @property string|null $description
+ * @property Carbon $transaction_at
+ * @property int|null $to_account_id
+ */
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */

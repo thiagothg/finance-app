@@ -28,3 +28,6 @@ _ide_helper_models.php
 .phpstorm.meta.php
 .env.testing
 /tasks/*
+**/caddy
+frankenphp
+frankenphp-worker.php
