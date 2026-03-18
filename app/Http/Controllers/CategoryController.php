@@ -16,7 +16,7 @@ use Illuminate\Http\Response;
 final class CategoryController extends Controller
 {
     public function __construct(
-        private readonly CategoryService $categoryService
+        private CategoryService $categoryService
     ) {}
 
     /**

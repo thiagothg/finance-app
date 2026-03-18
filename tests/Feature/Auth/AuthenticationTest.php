@@ -1,9 +1,13 @@
 <?php
 
 use App\Models\User;
-use function Pest\Laravel\{postJson, withHeaders, assertDatabaseCount};
-use function Pest\Faker\fake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+use function Pest\Faker\fake;
+use function Pest\Laravel\assertDatabaseCount;
+use function Pest\Laravel\postJson;
+use function Pest\Laravel\withHeaders;
 
 uses(RefreshDatabase::class);
 
@@ -62,7 +66,7 @@ test('login fails without required fields', function () {
 */
 
 test('user can register with valid data', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->postJson('/api/auth/register', [
         'name' => 'Test User',
         'email' => 'newuser@example.com',
@@ -122,7 +126,7 @@ test('authenticated user can logout', function () {
     $response->assertStatus(200)
         ->assertJson(['message' => 'Logout successful.']);
 
-   assertDatabaseCount('personal_access_tokens', 0);
+    assertDatabaseCount('personal_access_tokens', 0);
 });
 
 test('unauthenticated user cannot logout', function () {

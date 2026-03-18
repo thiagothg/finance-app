@@ -20,7 +20,7 @@ use Illuminate\Http\Response;
 final class HouseholdController extends Controller
 {
     public function __construct(
-        private readonly HouseholdService $householdService
+        private HouseholdService $householdService
     ) {}
 
     /**

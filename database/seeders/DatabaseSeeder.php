@@ -18,11 +18,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $admin = User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@local.com',
+            'password' => 'password',
+        ]);
+
         // Create 10 Users
         $users = User::factory(10)->create();
 
         // Create 5 Households, each owned by a random user
+        $household = Household::factory()->recycle($admin)->create();
+
         $households = Household::factory(5)->recycle($users)->create();
+        $households->push($household);
 
         // For each household, create members, categories, accounts, and transactions
         foreach ($households as $household) {
