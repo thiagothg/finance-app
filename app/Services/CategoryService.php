@@ -102,7 +102,13 @@ final readonly class CategoryService
     public function updateCategory(User $user, Category $category, array $data): Category
     {
         $this->ensureCanManageCategory($user, $category);
-        // $this->ensureNoTransactions($category);
+
+        if (isset($data['type'])) {
+            $typeValue = $data['type'] instanceof CategoryType ? $data['type']->value : $data['type'];
+            if ($typeValue !== $category->type->value) {
+                $this->ensureNoTransactions($category);
+            }
+        }
 
         if (isset($data['name']) || isset($data['type'])) {
             $nameToCheck = $data['name'] ?? $category->name;

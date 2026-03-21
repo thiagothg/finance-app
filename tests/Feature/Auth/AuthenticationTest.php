@@ -23,7 +23,7 @@ test('user can login with valid credentials', function () {
         'password' => 'password123',
     ]);
 
-    $response = postJson('/api/auth/login', [
+    $response = postJson('/api/v1/auth/login', [
         'email' => 'test@example.com',
         'password' => 'password123',
     ]);
@@ -43,7 +43,7 @@ test('login fails with invalid credentials', function () {
         'password' => 'password123',
     ]);
 
-    $response = postJson('/api/auth/login', [
+    $response = postJson('/api/v1/auth/login', [
         'email' => $email,
         'password' => 'wrong-password',
     ]);
@@ -53,7 +53,7 @@ test('login fails with invalid credentials', function () {
 });
 
 test('login fails without required fields', function () {
-    $response = postJson('/api/auth/login', []);
+    $response = postJson('/api/v1/auth/login', []);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['email', 'password']);
@@ -67,7 +67,7 @@ test('login fails without required fields', function () {
 
 test('user can register with valid data', function () {
     /** @var TestCase $this */
-    $response = $this->postJson('/api/auth/register', [
+    $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'Test User',
         'email' => 'newuser@example.com',
         'password' => 'password123',
@@ -91,7 +91,7 @@ test('register fails with duplicate email', function () {
         'email' => 'existing@example.com',
     ]);
 
-    $response = postJson('/api/auth/register', [
+    $response = postJson('/api/v1/auth/register', [
         'name' => 'Test User',
         'email' => 'existing@example.com',
         'password' => 'password123',
@@ -103,7 +103,7 @@ test('register fails with duplicate email', function () {
 });
 
 test('register fails without required fields', function () {
-    $response = postJson('/api/auth/register', []);
+    $response = postJson('/api/v1/auth/register', []);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['name', 'email', 'password']);
@@ -121,7 +121,7 @@ test('authenticated user can logout', function () {
 
     $response = withHeaders([
         'Authorization' => 'Bearer '.$token,
-    ])->postJson('/api/auth/logout');
+    ])->postJson('/api/v1/auth/logout');
 
     $response->assertStatus(200)
         ->assertJson(['message' => 'Logout successful.']);
@@ -130,7 +130,7 @@ test('authenticated user can logout', function () {
 });
 
 test('unauthenticated user cannot logout', function () {
-    $response = postJson('/api/auth/logout');
+    $response = postJson('/api/v1/auth/logout');
 
     $response->assertStatus(401);
 });

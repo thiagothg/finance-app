@@ -24,7 +24,7 @@ test('user can list their household with member spending', function () {
     Transaction::factory()->create(['category_id' => $category->id, 'spender_user_id' => $user1->id, 'amount' => 100.50]);
     Transaction::factory()->create(['category_id' => $category->id, 'spender_user_id' => $user2->id, 'amount' => 50.25]);
 
-    $response = $this->actingAs($user1)->getJson('/api/households');
+    $response = $this->actingAs($user1)->getJson('/api/v1/households');
 
     $response->assertStatus(200)
         ->assertJsonPath('meta.total_count', 1)
@@ -47,7 +47,7 @@ test('user cannot create multiple households', function () {
     $household = Household::factory()->create(['owner_id' => $user->id]);
     $household->members()->create(['user_id' => $user->id, 'role' => HouseholdMemberRole::Owner]);
 
-    $response = $this->actingAs($user)->postJson('/api/households', ['name' => 'Second Home']);
+    $response = $this->actingAs($user)->postJson('/api/v1/households', ['name' => 'Second Home']);
 
     $response->assertStatus(409);
 });
@@ -58,7 +58,7 @@ test('user can create a household if they have none', function () {
     /** @var Authenticatable $user */
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->postJson('/api/households', ['name' => 'My Home']);
+    $response = $this->actingAs($user)->postJson('/api/v1/households', ['name' => 'My Home']);
 
     $response->assertStatus(201)
         ->assertJsonPath('data.name', 'My Home')
@@ -83,13 +83,13 @@ test('member can update household name but viewer cannot', function () {
     $household->members()->create(['user_id' => $viewer->id, 'role' => HouseholdMemberRole::Viewer]);
 
     $this->actingAs($member)
-        ->putJson("/api/households/{$household->id}", ['name' => 'Updated By Member'])
+        ->putJson("/api/v1/households/{$household->id}", ['name' => 'Updated By Member'])
         ->assertStatus(200);
 
     $this->assertDatabaseHas('households', ['id' => $household->id, 'name' => 'Updated By Member']);
 
     $this->actingAs($viewer)
-        ->putJson("/api/households/{$household->id}", ['name' => 'Updated By Viewer'])
+        ->putJson("/api/v1/households/{$household->id}", ['name' => 'Updated By Viewer'])
         ->assertStatus(403);
 });
 
@@ -108,14 +108,14 @@ test('add members enforces single household constraint and permissions', functio
     $household->members()->create(['user_id' => $viewerUser->id, 'role' => HouseholdMemberRole::Viewer]);
 
     $this->actingAs($viewerUser)
-        ->postJson("/api/households/{$household->id}/members", [
+        ->postJson("/api/v1/households/{$household->id}/members", [
             'user_id' => $otherUser->id,
             'role' => HouseholdMemberRole::Member->value,
         ])
         ->assertStatus(403);
 
     $this->actingAs($owner)
-        ->postJson("/api/households/{$household->id}/members", [
+        ->postJson("/api/v1/households/{$household->id}/members", [
             'user_id' => $otherUser->id,
             'role' => HouseholdMemberRole::Member->value,
         ])
@@ -128,7 +128,7 @@ test('add members enforces single household constraint and permissions', functio
     $secondHousehold->members()->create(['user_id' => $thirdUser->id, 'role' => HouseholdMemberRole::Owner]);
 
     $this->actingAs($owner)
-        ->postJson("/api/households/{$household->id}/members", [
+        ->postJson("/api/v1/households/{$household->id}/members", [
             'user_id' => $thirdUser->id,
             'role' => HouseholdMemberRole::Member->value,
         ])
@@ -153,17 +153,17 @@ test('remove members enforces permissions and preserves owner', function () {
     $household->members()->create(['user_id' => $member2->id, 'role' => HouseholdMemberRole::Member]);
 
     $this->actingAs($member1)
-        ->deleteJson("/api/households/{$household->id}/members/{$member1->id}")
+        ->deleteJson("/api/v1/households/{$household->id}/members/{$member1->id}")
         ->assertStatus(204);
 
     $this->assertDatabaseMissing('household_members', ['user_id' => $member1->id, 'household_id' => $household->id]);
 
     $this->actingAs($member2)
-        ->deleteJson("/api/households/{$household->id}/members/{$owner->id}")
+        ->deleteJson("/api/v1/households/{$household->id}/members/{$owner->id}")
         ->assertStatus(403);
 
     $this->actingAs($owner)
-        ->deleteJson("/api/households/{$household->id}/members/{$member2->id}")
+        ->deleteJson("/api/v1/households/{$household->id}/members/{$member2->id}")
         ->assertStatus(204);
 
     $this->assertDatabaseMissing('household_members', ['user_id' => $member2->id, 'household_id' => $household->id]);

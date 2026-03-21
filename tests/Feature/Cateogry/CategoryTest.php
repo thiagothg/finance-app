@@ -36,7 +36,7 @@ test('user can list categories with total spend grouped by type', function () {
     Transaction::factory()->create(['category_id' => $expenseCat->id, 'spender_user_id' => $owner->id, 'amount' => 150]);
     Transaction::factory()->create(['category_id' => $expenseCat->id, 'spender_user_id' => $owner->id, 'amount' => 50]);
 
-    $response = $this->actingAs($owner)->getJson('/api/categories');
+    $response = $this->actingAs($owner)->getJson('/api/v1/categories');
 
     $response->assertStatus(200)
         ->assertJsonPath('meta.total_count', 2)
@@ -57,7 +57,7 @@ test('user can filter categories by type', function () {
     Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'type' => CategoryType::Income, 'name' => 'Bonus']);
     Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'type' => CategoryType::Expense, 'name' => 'Rent']);
 
-    $response = $this->actingAs($owner)->getJson('/api/categories?type='.CategoryType::Income->value);
+    $response = $this->actingAs($owner)->getJson('/api/v1/categories?type='.CategoryType::Income->value);
 
     $response->assertStatus(200)
         ->assertJsonPath('meta.total_count', 1)
@@ -72,7 +72,7 @@ test('user can create a category with budget', function () {
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
 
-    $response = $this->actingAs($owner)->postJson('/api/categories', [
+    $response = $this->actingAs($owner)->postJson('/api/v1/categories', [
         'name' => 'Utilities',
         'type' => CategoryType::Expense->value,
         'icon' => 'bolt',
@@ -107,7 +107,7 @@ test('creating category with duplicate name and type within same household fails
         'name' => 'Dining',
     ]);
 
-    $response = $this->actingAs($owner)->postJson('/api/categories', [
+    $response = $this->actingAs($owner)->postJson('/api/v1/categories', [
         'name' => 'Dining',
         'type' => CategoryType::Expense->value,
         'icon' => 'food',
@@ -117,7 +117,7 @@ test('creating category with duplicate name and type within same household fails
     $response->assertStatus(409); // Conflict
 });
 
-test('updating category when transactions exist fails', function () {
+test('updating category type when transactions exist fails', function () {
     /** @var TestCase $this */
 
     /** @var Authenticatable $owner */
@@ -125,10 +125,10 @@ test('updating category when transactions exist fails', function () {
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
 
-    $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id]);
+    $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'type' => CategoryType::Income]);
     Transaction::factory()->create(['category_id' => $cat->id, 'spender_user_id' => $owner->id]);
 
-    $response = $this->actingAs($owner)->putJson("/api/categories/{$cat->id}", [
+    $response = $this->actingAs($owner)->putJson("/api/v1/categories/{$cat->id}", [
         'name' => 'Changed Name',
         'type' => CategoryType::Expense->value,
         'icon' => 'food',
@@ -137,6 +137,28 @@ test('updating category when transactions exist fails', function () {
     ]);
 
     $response->assertStatus(409); // Conflict
+});
+
+test('updating category name and budget when transactions exist succeeds', function () {
+    /** @var TestCase $this */
+
+    /** @var Authenticatable $owner */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'type' => CategoryType::Expense]);
+    Transaction::factory()->create(['category_id' => $cat->id, 'spender_user_id' => $owner->id]);
+
+    $response = $this->actingAs($owner)->putJson("/api/v1/categories/{$cat->id}", [
+        'name' => 'New Awesome Name',
+        'type' => CategoryType::Expense->value,
+        'icon' => 'food',
+        'color' => '#000',
+        'budget' => 500.00,
+    ]);
+
+    $response->assertStatus(200);
 });
 
 test('deleting category when transactions exist fails', function () {
@@ -150,7 +172,7 @@ test('deleting category when transactions exist fails', function () {
     $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id]);
     Transaction::factory()->create(['category_id' => $cat->id, 'spender_user_id' => $owner->id]);
 
-    $response = $this->actingAs($owner)->deleteJson("/api/categories/{$cat->id}");
+    $response = $this->actingAs($owner)->deleteJson("/api/v1/categories/{$cat->id}");
 
     $response->assertStatus(409); // Conflict
 });
@@ -177,17 +199,17 @@ test('only owner/member or creator can update category', function () {
 
     // Viewer tries to edit owner's category -> fails
     $this->actingAs($viewer)
-        ->putJson("/api/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
+        ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
         ->assertStatus(403);
 
     // Alien tries -> fails (no household)
     $this->actingAs($alien)
-        ->putJson("/api/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
+        ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
         ->assertStatus(403);
 
     // Member tries to edit owner's category -> succeeds
     $this->actingAs($member)
-        ->putJson("/api/categories/{$catByOwner->id}", ['name' => 'Updated by Member', 'type' => CategoryType::Expense->value])
+        ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Updated by Member', 'type' => CategoryType::Expense->value])
         ->assertStatus(200);
 
     // Created by viewer
@@ -195,6 +217,6 @@ test('only owner/member or creator can update category', function () {
 
     // Viewer edits their own category -> succeeds
     $this->actingAs($viewer)
-        ->putJson("/api/categories/{$catByViewer->id}", ['name' => 'Viewer Fixed', 'type' => CategoryType::Expense->value])
+        ->putJson("/api/v1/categories/{$catByViewer->id}", ['name' => 'Viewer Fixed', 'type' => CategoryType::Expense->value])
         ->assertStatus(200);
 });

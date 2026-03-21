@@ -22,6 +22,10 @@ build:
 test:
 	docker compose exec app php artisan test
 
+# Run all tests with coverage (executes in the running app container)
+test-coverage:
+	docker compose exec app XDEBUG_MODE=coverage php artisan test --coverage
+
 # Open a shell inside the app container
 shell:
 	docker compose exec app bash

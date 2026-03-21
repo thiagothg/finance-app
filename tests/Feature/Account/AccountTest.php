@@ -14,7 +14,7 @@ use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\getJson;
 
 it('requires authentication for accounts endpoints', function () {
-    $response = getJson('/api/accounts');
+    $response = getJson('/api/v1/accounts');
     $response->assertUnauthorized();
 });
 
@@ -37,7 +37,7 @@ it('lists an authenticated users accounts and calculates total balance', functio
     ]);
 
     actingAs($user)
-        ->getJson('/api/accounts')
+        ->getJson('/api/v1/accounts')
         ->assertOk()
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('meta.total_balance', 1500);
@@ -57,7 +57,7 @@ it('lists accounts of other household members', function () {
     Account::factory()->create(['user_id' => $member->id, 'balance' => 200]);
 
     actingAs($owner)
-        ->getJson('/api/accounts')
+        ->getJson('/api/v1/accounts')
         ->assertOk()
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('meta.total_balance', 300);
@@ -76,7 +76,7 @@ it('can create an account', function () {
     ];
 
     actingAs($user)
-        ->postJson('/api/accounts', $payload)
+        ->postJson('/api/v1/accounts', $payload)
         ->assertCreated()
         ->assertJsonPath('data.name', 'Main Checking')
         ->assertJsonPath('data.user_name', $user->name);
@@ -108,7 +108,7 @@ it('enforces unique constraints on name bank and type scoped to user', function 
     ];
 
     actingAs($user)
-        ->postJson('/api/accounts', $payload)
+        ->postJson('/api/v1/accounts', $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['name']);
 });
@@ -119,7 +119,7 @@ it('allows updating own account', function () {
     $account = Account::factory()->create(['user_id' => $user->id, 'name' => 'Old Name', 'type' => AccountType::Cash->value, 'bank' => 'Cash']);
 
     actingAs($user)
-        ->putJson("/api/accounts/{$account->id}", [
+        ->putJson("/api/v1/accounts/{$account->id}", [
             'name' => 'New Name',
             'type' => AccountType::Cash->value,
             'initial_balance' => 10,
@@ -144,7 +144,7 @@ it('allows household owner to update member account', function () {
 
     // Owner edits member account
     actingAs($owner)
-        ->putJson("/api/accounts/{$memberAccount->id}", [
+        ->putJson("/api/v1/accounts/{$memberAccount->id}", [
             'name' => 'Edited by Owner',
             'type' => AccountType::Checking->value,
             'initial_balance' => 0,
@@ -169,7 +169,7 @@ it('forbids normal household member from updating another member account', funct
     $member2Account = Account::factory()->create(['user_id' => $member2->id]);
 
     actingAs($member1)
-        ->putJson("/api/accounts/{$member2Account->id}", [
+        ->putJson("/api/v1/accounts/{$member2Account->id}", [
             'name' => 'Hacked',
             'type' => AccountType::Checking->value,
             'initial_balance' => 0,
@@ -185,7 +185,7 @@ it('can delete an account', function () {
     $account = Account::factory()->create(['user_id' => $user->id]);
 
     actingAs($user)
-        ->deleteJson("/api/accounts/{$account->id}")
+        ->deleteJson("/api/v1/accounts/{$account->id}")
         ->assertNoContent();
 
     assertSoftDeleted('accounts', ['id' => $account->id]);

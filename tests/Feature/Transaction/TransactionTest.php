@@ -13,7 +13,7 @@ use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\getJson;
 
 it('requires authentication for transactions endpoints', function () {
-    $response = getJson('/api/transactions');
+    $response = getJson('/api/v1/transactions');
     $response->assertUnauthorized();
 });
 
@@ -39,7 +39,7 @@ it('lists transactions with grouping and meta data', function () {
     ]);
 
     actingAs($user)
-        ->getJson('/api/transactions')
+        ->getJson('/api/v1/transactions')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -75,7 +75,7 @@ it('can create an expense transaction and update balance', function () {
     ];
 
     actingAs($user)
-        ->postJson('/api/transactions', $payload)
+        ->postJson('/api/v1/transactions', $payload)
         ->assertCreated();
 
     assertDatabaseHas('transactions', [
@@ -102,7 +102,7 @@ it('can create an income transaction and update balance', function () {
     ];
 
     actingAs($user)
-        ->postJson('/api/transactions', $payload)
+        ->postJson('/api/v1/transactions', $payload)
         ->assertCreated();
 
     expect((string) $account->fresh()->balance)->toBe('700.00'); // 500 + 200
@@ -126,7 +126,7 @@ it('can create a transfer transaction and update both balances', function () {
     ];
 
     actingAs($user)
-        ->postJson('/api/transactions', $payload)
+        ->postJson('/api/v1/transactions', $payload)
         ->assertCreated();
 
     expect((string) $accountFrom->fresh()->balance)->toBe('350.00'); // 500 - 150
@@ -158,7 +158,7 @@ it('can update a transaction and recalculate balance', function () {
     ];
 
     actingAs($user)
-        ->putJson("/api/transactions/{$transaction->id}", $payload)
+        ->putJson("/api/v1/transactions/{$transaction->id}", $payload)
         ->assertOk();
 
     // Revert -100 (balance becomes 500), Apply -150 (balance becomes 350)
@@ -180,7 +180,7 @@ it('can delete a transaction and restore balance', function () {
     ]);
 
     actingAs($user)
-        ->deleteJson("/api/transactions/{$transaction->id}")
+        ->deleteJson("/api/v1/transactions/{$transaction->id}")
         ->assertNoContent();
 
     assertSoftDeleted('transactions', ['id' => $transaction->id]);
