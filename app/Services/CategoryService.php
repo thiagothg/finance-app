@@ -112,7 +112,9 @@ final readonly class CategoryService
 
         if (isset($data['name']) || isset($data['type'])) {
             $nameToCheck = $data['name'] ?? $category->name;
-            $typeValue = $data['type'] instanceof CategoryType ? $data['type']->value : $data['type'];
+            $typeValue = isset($data['type'])
+                ? ($data['type'] instanceof CategoryType ? $data['type']->value : $data['type'])
+                : null;
             $typeToCheck = $typeValue ?? $category->type->value;
 
             $exists = $category->household->categories()

@@ -67,7 +67,9 @@ final readonly class TransactionService
         }
 
         $accounts = Account::whereIn('user_id', $memberIds)->get();
-        $categories = $household->categories()->get();
+
+        $categories = $household ? $household->categories()->get() : collect();
+
         $users = User::whereIn('id', $memberIds)->get();
 
         return [
@@ -143,11 +145,14 @@ final readonly class TransactionService
 
     /**
      * Update the balance of accounts involved in a transaction.
+     *
+     * Multiplier convention:
+     *   +1 = applying the transaction (create)
+     *   -1 = reverting the transaction (delete / pre-update)
      */
     private function updateAccountBalance(Transaction $transaction, int $multiplier = 1): void
     {
         $account = Account::findOrFail($transaction->account_id);
-
         $amount = $transaction->amount;
         $type = $transaction->type;
 
@@ -185,32 +190,37 @@ final readonly class TransactionService
         if ($request->filled('account_id')) {
             $query->where('account_id', $request->input('account_id'));
         }
+
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->input('category_id'));
         }
+
         if ($request->filled('type')) {
             $query->where('type', $request->input('type'));
         }
+
         if ($request->filled('transaction_at')) {
             $query->whereDate('transaction_at', $request->input('transaction_at'));
         }
+
         if ($request->filled('amount')) {
             $query->where('amount', $request->input('amount'));
         }
+
         if ($request->filled('description')) {
             $query->where('description', 'like', '%'.$request->input('description').'%');
         }
+
         if ($request->filled('spender_user_id')) {
             $query->where('spender_user_id', $request->input('spender_user_id'));
         }
 
-        // Global search string
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
                     ->orWhere('amount', 'like', "%{$search}%")
                     ->orWhere('type', 'like', "%{$search}%")
-                    ->orWhereDate('transaction_at', $search)
+                    ->when(preg_match('/^\d{4}-\d{2}-\d{2}$/', $search), fn ($q) => $q->orWhereDate('transaction_at', $search))
                     ->orWhereHas('category', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     })

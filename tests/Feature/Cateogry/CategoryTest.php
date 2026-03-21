@@ -6,13 +6,13 @@ use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+uses(RefreshDatabase::class);
 
 test('user can list categories with total spend grouped by type', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -48,8 +48,6 @@ test('user can list categories with total spend grouped by type', function () {
 
 test('user can filter categories by type', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -66,8 +64,6 @@ test('user can filter categories by type', function () {
 
 test('user can create a category with budget', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -94,8 +90,6 @@ test('user can create a category with budget', function () {
 
 test('creating category with duplicate name and type within same household fails', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -119,8 +113,6 @@ test('creating category with duplicate name and type within same household fails
 
 test('updating category type when transactions exist fails', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -141,8 +133,6 @@ test('updating category type when transactions exist fails', function () {
 
 test('updating category name and budget when transactions exist succeeds', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -163,8 +153,6 @@ test('updating category name and budget when transactions exist succeeds', funct
 
 test('deleting category when transactions exist fails', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -179,14 +167,9 @@ test('deleting category when transactions exist fails', function () {
 
 test('only owner/member or creator can update category', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
-    /** @var Authenticatable $member */
     $member = User::factory()->create();
-    /** @var Authenticatable $viewer */
     $viewer = User::factory()->create();
-    /** @var Authenticatable $alien */
     $alien = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -198,25 +181,93 @@ test('only owner/member or creator can update category', function () {
     $catByOwner = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id]);
 
     // Viewer tries to edit owner's category -> fails
+
     $this->actingAs($viewer)
         ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
         ->assertStatus(403);
 
-    // Alien tries -> fails (no household)
     $this->actingAs($alien)
         ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Hacked', 'type' => CategoryType::Expense->value])
         ->assertStatus(403);
 
-    // Member tries to edit owner's category -> succeeds
     $this->actingAs($member)
         ->putJson("/api/v1/categories/{$catByOwner->id}", ['name' => 'Updated by Member', 'type' => CategoryType::Expense->value])
         ->assertStatus(200);
 
-    // Created by viewer
     $catByViewer = Category::factory()->create(['household_id' => $household->id, 'user_id' => $viewer->id]);
 
-    // Viewer edits their own category -> succeeds
     $this->actingAs($viewer)
         ->putJson("/api/v1/categories/{$catByViewer->id}", ['name' => 'Viewer Fixed', 'type' => CategoryType::Expense->value])
         ->assertStatus(200);
+});
+
+test('user without household receives empty categories list', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+
+    $this->actingAs($owner)->getJson('/api/v1/categories')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.total_count', 0);
+});
+
+test('user with household but no categories receives empty list', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $this->actingAs($owner)->getJson('/api/v1/categories')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.total_count', 0);
+});
+
+test('user without household cannot create category', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+
+    $this->actingAs($owner)->postJson('/api/v1/categories', [
+        'name' => 'Test', 'type' => CategoryType::Expense->value, 'icon' => 'test', 'color' => '#000',
+    ])->assertStatus(404);
+});
+
+test('updating category to existing duplicate fails', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $cat1 = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'name' => 'A', 'type' => CategoryType::Expense]);
+    $cat2 = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id, 'name' => 'B', 'type' => CategoryType::Expense]);
+
+    $this->actingAs($owner)->putJson("/api/v1/categories/{$cat2->id}", [
+        'name' => 'A',
+        'type' => CategoryType::Expense->value,
+        'icon' => 'food',
+        'color' => '#000',
+    ])->assertStatus(409);
+});
+
+test('deleting category when no transactions exist succeeds', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id]);
+
+    $this->actingAs($owner)->deleteJson("/api/v1/categories/{$cat->id}")
+        ->assertStatus(204);
+});
+
+test('can show a category', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $cat = Category::factory()->create(['household_id' => $household->id, 'user_id' => $owner->id]);
+
+    $this->actingAs($owner)->getJson("/api/v1/categories/{$cat->id}")
+        ->assertStatus(200)
+        ->assertJsonPath('data.id', $cat->id);
 });

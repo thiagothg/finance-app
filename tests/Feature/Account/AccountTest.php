@@ -6,12 +6,14 @@ use App\Models\Account;
 use App\Models\Household;
 use App\Models\HouseholdMember;
 use App\Models\User;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\getJson;
+
+uses(RefreshDatabase::class);
 
 it('requires authentication for accounts endpoints', function () {
     $response = getJson('/api/v1/accounts');
@@ -19,7 +21,7 @@ it('requires authentication for accounts endpoints', function () {
 });
 
 it('lists an authenticated users accounts and calculates total balance', function () {
-    /** @var Authenticatable $user */
+
     $user = User::factory()->create();
 
     // Create an account with balance 0, should sum initial_balance
@@ -45,7 +47,7 @@ it('lists an authenticated users accounts and calculates total balance', functio
 
 it('lists accounts of other household members', function () {
     $household = Household::factory()->create();
-    /** @var Authenticatable $owner */
+
     $owner = User::factory()->create();
     $member = User::factory()->create();
 
@@ -64,7 +66,7 @@ it('lists accounts of other household members', function () {
 });
 
 it('can create an account', function () {
-    /** @var Authenticatable $user */
+
     $user = User::factory()->create();
 
     $payload = [
@@ -89,7 +91,7 @@ it('can create an account', function () {
 });
 
 it('enforces unique constraints on name bank and type scoped to user', function () {
-    /** @var Authenticatable $user */
+
     $user = User::factory()->create();
 
     Account::factory()->create([
@@ -114,7 +116,7 @@ it('enforces unique constraints on name bank and type scoped to user', function 
 });
 
 it('allows updating own account', function () {
-    /** @var Authenticatable $user */
+
     $user = User::factory()->create();
     $account = Account::factory()->create(['user_id' => $user->id, 'name' => 'Old Name', 'type' => AccountType::Cash->value, 'bank' => 'Cash']);
 
@@ -133,7 +135,6 @@ it('allows updating own account', function () {
 it('allows household owner to update member account', function () {
     $household = Household::factory()->create();
 
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
     $member = User::factory()->create();
 
@@ -158,9 +159,9 @@ it('allows household owner to update member account', function () {
 
 it('forbids normal household member from updating another member account', function () {
     $household = Household::factory()->create();
-    /** @var Authenticatable $member1 */
+    /** @var User $member1 */
     $member1 = User::factory()->create();
-    /** @var Authenticatable $member2 */
+    /** @var User $member2 */
     $member2 = User::factory()->create();
 
     HouseholdMember::factory()->create(['household_id' => $household->id, 'user_id' => $member1->id, 'role' => HouseholdMemberRole::Member]);
@@ -180,7 +181,7 @@ it('forbids normal household member from updating another member account', funct
 });
 
 it('can delete an account', function () {
-    /** @var Authenticatable $user */
+
     $user = User::factory()->create();
     $account = Account::factory()->create(['user_id' => $user->id]);
 

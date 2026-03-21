@@ -5,13 +5,15 @@ use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Contracts\Auth\Authenticatable;
+use App\Services\HouseholdService;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+uses(RefreshDatabase::class);
 
 test('user can list their household with member spending', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $user1 */
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -32,6 +34,7 @@ test('user can list their household with member spending', function () {
         ->assertJsonPath('data.0.members_count', 2);
 
     $data = $response->json('data.0.members');
+
     $user1Spend = collect($data)->firstWhere('user.id', $user1->id)['total_spend'];
     $user2Spend = collect($data)->firstWhere('user.id', $user2->id)['total_spend'];
 
@@ -41,8 +44,6 @@ test('user can list their household with member spending', function () {
 
 test('user cannot create multiple households', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $user */
     $user = User::factory()->create();
     $household = Household::factory()->create(['owner_id' => $user->id]);
     $household->members()->create(['user_id' => $user->id, 'role' => HouseholdMemberRole::Owner]);
@@ -54,8 +55,6 @@ test('user cannot create multiple households', function () {
 
 test('user can create a household if they have none', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $user */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson('/api/v1/households', ['name' => 'My Home']);
@@ -71,10 +70,7 @@ test('user can create a household if they have none', function () {
 test('member can update household name but viewer cannot', function () {
     /** @var TestCase $this */
     $owner = User::factory()->create();
-    /** @var Authenticatable $member */
     $member = User::factory()->create();
-
-    /** @var Authenticatable $viewer */
     $viewer = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -95,12 +91,8 @@ test('member can update household name but viewer cannot', function () {
 
 test('add members enforces single household constraint and permissions', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
-    /** @var Authenticatable $otherUser */
     $otherUser = User::factory()->create();
-    /** @var Authenticatable $viewerUser */
     $viewerUser = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -137,14 +129,8 @@ test('add members enforces single household constraint and permissions', functio
 
 test('remove members enforces permissions and preserves owner', function () {
     /** @var TestCase $this */
-
-    /** @var Authenticatable $owner */
     $owner = User::factory()->create();
-
-    /** @var Authenticatable $member1 */
     $member1 = User::factory()->create();
-
-    /** @var Authenticatable $member2 */
     $member2 = User::factory()->create();
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
@@ -167,4 +153,74 @@ test('remove members enforces permissions and preserves owner', function () {
         ->assertStatus(204);
 
     $this->assertDatabaseMissing('household_members', ['user_id' => $member2->id, 'household_id' => $household->id]);
+});
+
+test('user without household receives empty household list', function () {
+    /** @var TestCase $this */
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->getJson('/api/v1/households')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.total_count', 0);
+});
+
+test('listMembers service method returns members collection', function () {
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $service = app(HouseholdService::class);
+    $members = $service->listMembers($household);
+
+    expect($members)->toHaveCount(1);
+    expect($members->first()->user_id)->toBe($owner->id);
+});
+
+test('viewer cannot remove members', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $viewer = User::factory()->create();
+    $member = User::factory()->create();
+
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+    $household->members()->create(['user_id' => $viewer->id, 'role' => HouseholdMemberRole::Viewer]);
+    $household->members()->create(['user_id' => $member->id, 'role' => HouseholdMemberRole::Member]);
+
+    $this->actingAs($viewer)
+        ->deleteJson("/api/v1/households/{$household->id}/members/{$member->id}")
+        ->assertStatus(403);
+});
+
+test('removing non-existent member returns 404', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $alien = User::factory()->create();
+
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $this->actingAs($owner)
+        ->deleteJson("/api/v1/households/{$household->id}/members/{$alien->id}")
+        ->assertStatus(404);
+});
+
+test('user model relationships work', function () {
+    $user = User::factory()->create();
+    expect($user->transactions())->toBeInstanceOf(HasMany::class);
+    expect($user->categories())->toBeInstanceOf(HasMany::class);
+});
+
+test('can list household members', function () {
+    /** @var TestCase $this */
+    $owner = User::factory()->create();
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+
+    $member = User::factory()->create();
+    $household->members()->create(['user_id' => $member->id, 'role' => HouseholdMemberRole::Member]);
+
+    $this->actingAs($owner)->getJson("/api/v1/households/{$household->id}/members")
+        ->assertStatus(200)
+        ->assertJsonCount(2, 'data');
 });
