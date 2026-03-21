@@ -101,6 +101,33 @@ services:
             - '/dev/shm:/dev/shm'
         networks:
             - sail
+    localstack:
+        image: 'localstack/localstack:latest'
+        ports:
+            - '${FORWARD_LOCALSTACK_PORT:-4566}:4566'
+        environment:
+            SERVICES: '${LOCALSTACK_SERVICES:-s3,sqs,ses,sns,ec2}'
+            DEBUG: '${LOCALSTACK_DEBUG:-0}'
+            PERSISTENCE: '1'
+            AWS_DEFAULT_REGION: '${AWS_DEFAULT_REGION:-us-east-1}'
+            LOCALSTACK_AUTH_TOKEN: '${LOCALSTACK_AUTH_TOKEN:-localstack}'
+            APP_NAME: '${APP_NAME:-finance-app}'
+            SES_FROM_EMAIL: '${MAIL_FROM_ADDRESS:-noreply@finance-app.local}'
+        volumes:
+            - 'sail-localstack:/var/lib/localstack'
+            - '/var/run/docker.sock:/var/run/docker.sock'
+            - './docker/infra/scripts/localstack-seed.sh:/etc/localstack/init/ready.d/localstack-seed.sh'
+            # - './docker/localstack/init.sh:/etc/localstack/init/ready.d/init.sh'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - bash
+                - '-c'
+                - 'awslocal s3 ls'
+            retries: 3
+            timeout: 5s
 networks:
     sail:
         driver: bridge
@@ -114,4 +141,6 @@ volumes:
     caddy_data:
         driver: local
     caddy_config:
+        driver: local
+    sail-localstack:
         driver: local
