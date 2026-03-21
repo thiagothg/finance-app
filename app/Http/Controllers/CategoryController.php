@@ -34,16 +34,24 @@ final class CategoryController extends Controller
 
         $response = [];
         $totalCount = 0;
+        $totalBy = [];
 
         foreach ($groupedCategories as $key => $collection) {
             $totalCount += $collection->count();
             $response[$key] = CategoryResource::collection($collection);
+            $totalBy[$key] = [
+                'total_spent' => $collection->sum('total_spend'),
+                'count' => $collection->count(),
+                'total_budget' => $collection->sum('budget'),
+                'remaining_budget' => $collection->sum('budget') - $collection->sum('total_spend'),
+            ];
         }
 
         return [
             'data' => $response,
             'meta' => [
                 'total_count' => $totalCount,
+                'total_by_type' => $totalBy,
             ],
         ];
     }

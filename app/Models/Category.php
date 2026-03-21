@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CategoryType $type
  * @property string|null $icon
  * @property string|null $color
- * @property string|null $budget
+ * @property float|null $budget
  * @property int $user_id
  * @property int $household_id
  */
@@ -39,7 +39,7 @@ final class Category extends Model
     {
         return [
             'type' => CategoryType::class,
-            'budget' => 'decimal:2',
+            'budget' => 'float',
         ];
     }
 

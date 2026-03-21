@@ -14,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property CategoryType $type
  * @property string|null $icon
  * @property string|null $color
- * @property string|null $budget
+ * @property float|null $budget
  * @property int|null $user_id
  * @property float|null $total_spend
  */
@@ -31,7 +31,7 @@ class CategoryResource extends JsonResource
             'type' => $this->type,
             'icon' => $this->icon,
             'color' => $this->color,
-            'budget' => $this->budget,
+            'budget' => $this->budget ?? 0.0,
             'user_id' => $this->user_id,
             'total_spend' => $this->total_spend ?? 0.0,
         ];

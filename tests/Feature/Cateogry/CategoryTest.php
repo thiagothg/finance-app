@@ -82,7 +82,7 @@ test('user can create a category with budget', function () {
 
     $response->assertStatus(201)
         ->assertJsonPath('data.name', 'Utilities')
-        ->assertJsonPath('data.budget', '300.50')
+        ->assertJsonPath('data.budget', 300.50)
         ->assertJsonPath('data.user_id', $owner->id);
 
     $this->assertDatabaseHas('categories', [

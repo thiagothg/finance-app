@@ -8,6 +8,7 @@ use App\Enums\CategoryType;
 use App\Enums\HouseholdMemberRole;
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -30,6 +31,7 @@ final readonly class CategoryService
             return collect();
         }
 
+        /** @var Builder<Category> $query */
         $query = $household->categories()->with('user');
 
         if ($type) {
@@ -100,7 +102,7 @@ final readonly class CategoryService
     public function updateCategory(User $user, Category $category, array $data): Category
     {
         $this->ensureCanManageCategory($user, $category);
-        $this->ensureNoTransactions($category);
+        // $this->ensureNoTransactions($category);
 
         if (isset($data['name']) || isset($data['type'])) {
             $nameToCheck = $data['name'] ?? $category->name;
