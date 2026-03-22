@@ -21,6 +21,13 @@ PostgreSQL Database
 - investments tracking
 - CSV bank import
 
+## API Documentation
+
+This project uses [Scramble](https://scramble.dedoc.co/) for API documentation. 
+The documentation is automatically generated on the fly. You do not need to manually update it when routes change.
+- **View Docs:** Visit `/docs/api` in your browser.
+- **Export Specs:** To manually export the OpenAPI JSON file, run `php artisan scramble:export`.
+
 ## Tech Stack
 
 Backend

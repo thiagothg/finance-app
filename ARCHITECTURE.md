@@ -81,6 +81,7 @@ The following rules apply to this specific project and *extend* the Boost defaul
 
 ## 10. Documentation
 - **Comments**: Always comment functions to explain what they do.
+- **API Documentation**: The project uses Scramble to automatically generate OpenAPI documentation. It infers endpoints from routes, `FormRequest` rules, and `JsonResource` responses. Ensure endpoints are properly typed so the documentation remains accurate.
 
 ## 11. Git
 

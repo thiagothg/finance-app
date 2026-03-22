@@ -67,6 +67,11 @@ This project leverages Laravel Boost defaults (PHP 8.4, Laravel 12, Octane, Pest
 - **Only** use Repositories when queries are extremely complex or multiple data sources (Cache + DB) must be abstracted.
 - Do not create boilerplate repositories that just wrap simple Eloquent methods.
 
+### API Documentation
+- This project uses **Scramble** for automatic API documentation. 
+- You do **not** need to write manual Swagger/OpenAPI annotations. Scramble automatically reads your Laravel routes, `FormRequest` validation rules, and `JsonResource` returns.
+- Always ensure your endpoint return types are strictly defined to guarantee the documentation is generated accurately.
+
 ---
 
 ## 4. Database & Routing

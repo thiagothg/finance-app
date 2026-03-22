@@ -46,6 +46,9 @@ RUN if [ "$APP_ENV" = "local" ]; then \
 # Set working directory (FrankenPHP expects /app)
 WORKDIR /app
 
+# Copy Composer binary so it's available in the final image
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 # Copy custom PHP configuration
 COPY docker/php.ini $PHP_INI_DIR/conf.d/99-app.ini
 
