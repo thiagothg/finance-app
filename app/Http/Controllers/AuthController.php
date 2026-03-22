@@ -1,61 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RefreshTokenRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\Auth\AuthResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class AuthController extends Controller
 {
-    public function __construct(
-        protected AuthService $authService,
-    ) {}
+    public function __construct(private readonly AuthService $authService) {}
 
     /**
-     * Handle a login request.
+     * Register a new user and return a token pair.
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function register(RegisterRequest $request): AuthResource
     {
-        $result = $this->authService->login(
-            $request->validated('email'),
-            $request->validated('password'),
-        );
+        $result = $this->authService->register($request->validated());
 
-        return response()->json([
-            'message' => 'Login successful.',
-            'user' => $result['user'],
-            'token' => $result['token'],
-        ]);
+        return new AuthResource($result);
     }
 
     /**
-     * Handle a registration request.
+     * Authenticate and return a token pair.
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function login(LoginRequest $request): AuthResource
     {
-        $result = $this->authService->register(
-            $request->validated(),
-        );
+        $result = $this->authService->login($request->validated());
 
-        return response()->json([
-            'message' => 'Registration successful.',
-            'user' => $result['user'],
-            'token' => $result['token'],
-        ], 201);
+        return new AuthResource($result);
     }
 
     /**
-     * Handle a logout request.
+     * Revoke the current access token (logout).
      */
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
 
-        return response()->json([
-            'message' => 'Logout successful.',
-        ]);
+        return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    /**
+     * Exchange a valid refresh token for a new token pair.
+     *
+     * This endpoint does NOT use auth:sanctum middleware — the refresh token
+     * is passed in the request body and validated manually inside AuthService.
+     * This allows the Flutter app to call it even after the access token expires.
+     */
+    public function refresh(RefreshTokenRequest $request): AuthResource
+    {
+        $result = $this->authService->refresh($request->input('refresh_token'));
+
+        return new AuthResource($result);
     }
 }

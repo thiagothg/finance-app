@@ -28,11 +28,15 @@ test('user can login with valid credentials', function () {
         'password' => 'password123',
     ]);
 
-    $response->assertStatus(200)
+    $response->assertSuccessful()
         ->assertJsonStructure([
-            'message',
-            'user' => ['id', 'name', 'email'],
-            'token',
+            'data' => [
+                'user' => ['id', 'name', 'email'],
+                'access_token',
+                'refresh_token',
+                'access_expires_at',
+                'refresh_expires_at',
+            ],
         ]);
 });
 
@@ -74,11 +78,15 @@ test('user can register with valid data', function () {
         'password_confirmation' => 'password123',
     ]);
 
-    $response->assertStatus(201)
+    $response->assertSuccessful()
         ->assertJsonStructure([
-            'message',
-            'user' => ['id', 'name', 'email'],
-            'token',
+            'data' => [
+                'user' => ['id', 'name', 'email'],
+                'access_token',
+                'refresh_token',
+                'access_expires_at',
+                'refresh_expires_at',
+            ],
         ]);
 
     $this->assertDatabaseHas('users', [
@@ -123,8 +131,8 @@ test('authenticated user can logout', function () {
         'Authorization' => 'Bearer '.$token,
     ])->postJson('/api/v1/auth/logout');
 
-    $response->assertStatus(200)
-        ->assertJson(['message' => 'Logout successful.']);
+    $response->assertSuccessful()
+        ->assertJson(['message' => 'Logged out successfully.']);
 
     assertDatabaseCount('personal_access_tokens', 0);
 });

@@ -54,6 +54,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Token Time-To-Live and Renewal
+    |--------------------------------------------------------------------------
+    |
+    | These values control the expiration of access and refresh tokens used
+    | by the application, as well as the grace period for silently renewing
+    | an expired but recently used refresh token.
+    |
+    */
+
+    'access_token_ttl_minutes' => env('SANCTUM_ACCESS_TOKEN_TTL_MINUTES', 15),
+    'refresh_token_ttl_days' => env('SANCTUM_REFRESH_TOKEN_TTL_DAYS', 30),
+    'silent_renew_grace_days' => env('SANCTUM_SILENT_RENEW_GRACE_DAYS', 7),
+
+    /*
+    |--------------------------------------------------------------------------
     | Token Prefix
     |--------------------------------------------------------------------------
     |
