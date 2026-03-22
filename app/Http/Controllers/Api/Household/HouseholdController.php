@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\Household;
 
 use App\Enums\HouseholdMemberRole;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\AddHouseholdMemberRequest;
 use App\Http\Requests\StoreHouseholdRequest;
 use App\Http\Requests\UpdateHouseholdRequest;
