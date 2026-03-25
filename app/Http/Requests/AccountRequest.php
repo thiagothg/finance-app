@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\AccountType;
+use App\Enums\CurrencyEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -43,7 +44,7 @@ class AccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', $uniqueRule],
             'type' => ['required', 'string', new Enum(AccountType::class)],
             'initial_balance' => ['required', 'numeric'],
-            'currency' => ['required', 'string', 'max:3'],
+            'currency' => ['sometimes', 'required', 'string', 'size:3', new Enum(CurrencyEnum::class)],
             'bank' => ['required', 'string', 'max:50'],
             'user_id' => ['sometimes', 'exists:users,id'],
             'is_closed' => ['sometimes', 'boolean'],

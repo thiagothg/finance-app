@@ -32,7 +32,9 @@ final readonly class AccountService
             ->whereIn('user_id', $memberIds)
             ->get();
 
-        $totalSum = (float) $accounts->sum(function ($account) {
+        $totalSum = (float) $accounts->sum(function (Account $account) {
+            // If the account has a balance in a non-BRL currency, we need amount_base.
+            // For now, use balance directly — update when balance column stores BRL equivalent.
             return (float) ($account->balance != 0 ? $account->balance : $account->initial_balance);
         });
 

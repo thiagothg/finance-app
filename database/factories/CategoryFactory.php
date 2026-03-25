@@ -20,6 +20,7 @@ class CategoryFactory extends Factory
             'user_id' => User::factory(),
             'name' => fake()->unique()->word().' Category',
             'type' => fake()->randomElement([CategoryType::Income, CategoryType::Expense]),
+            'budget' => fake()->randomFloat(2, 0, 10000),
             'icon' => fake()->word(),
             'color' => fake()->hexColor(),
         ];

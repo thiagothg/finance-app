@@ -18,6 +18,9 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained()->restrictOnDelete();
             $table->foreignId('spender_user_id')->nullable()->constrained('users')->restrictOnDelete();
             $table->decimal('amount', 12, 2);
+            $table->char('currency', 3)->default('BRL');
+            $table->decimal('amount_base', 15, 6)->nullable();
+            $table->decimal('exchange_rate', 15, 8)->nullable();
             $table->enum('type', array_column(TransactionType::cases(), 'value'));
             $table->text('description')->nullable();
             $table->datetimeTz('transaction_at');

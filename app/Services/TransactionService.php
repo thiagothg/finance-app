@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CurrencyEnum;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
@@ -89,6 +90,13 @@ final readonly class TransactionService
     public function createTransaction(array $data): Transaction
     {
         return DB::transaction(function () use ($data) {
+            $data['currency']      ??= CurrencyEnum::BRL->value;
+            $data['exchange_rate'] ??= 1.0;
+            $data['amount_base'] = round(
+                (float) $data['amount'] * (float) $data['exchange_rate'],
+                6,
+            );
+
             /** @var Transaction $transaction */
             $transaction = Transaction::create($data);
 
@@ -120,6 +128,14 @@ final readonly class TransactionService
         return DB::transaction(function () use ($transaction, $data) {
             // Revert original transaction balance effect
             $this->updateAccountBalance($transaction, -1);
+
+            if (isset($data['amount']) || isset($data['exchange_rate'])) {
+                $amount       = (float) ($data['amount']        ?? $transaction->amount);
+                $exchangeRate = (float) ($data['exchange_rate'] ?? $transaction->exchange_rate ?? 1.0);
+
+                $data['amount_base']   = round($amount * $exchangeRate, 6);
+                $data['exchange_rate'] = $exchangeRate;
+            }
 
             $transaction->update($data);
 

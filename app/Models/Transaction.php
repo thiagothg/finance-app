@@ -20,6 +20,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $description
  * @property Carbon $transaction_at
  * @property int|null $to_account_id
+ * @property string $currency
+ * @property float|string|null $amount_base
+ * @property float|string|null $exchange_rate
  */
 final class Transaction extends Model
 {
@@ -35,6 +38,9 @@ final class Transaction extends Model
         'description',
         'transaction_at',
         'to_account_id',
+        'currency',
+        'amount_base',
+        'exchange_rate',
     ];
 
     protected function casts(): array
