@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use App\Enums\HouseholdMemberRole;
+use App\Enums\HouseholdMemberStatus;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Household;
 use App\Models\HouseholdMember;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\HouseholdInvitationNotification;
 use App\Services\HouseholdService;
+use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -105,7 +108,9 @@ describe('getByUser', function (): void {
         $household = $result->first();
 
         expect($household->members_count)->toBe(1)
-            ->and($household->members->first()->relationLoaded('user'))->toBeTrue();
+            ->and($household->members->first()->relationLoaded('user'))->toBeTrue()
+            ->and($household->relationLoaded('currentUserMembership'))->toBeTrue()
+            ->and($household->currentUserMembership?->status)->toBe(HouseholdMemberStatus::Accepted);
     });
 
 });
@@ -123,6 +128,7 @@ describe('upsertName', function (): void {
         assertDatabaseHas('household_members', [
             'user_id' => $user->id,
             'role' => HouseholdMemberRole::Owner->value,
+            'status' => HouseholdMemberStatus::Accepted->value,
         ]);
     });
 
@@ -185,71 +191,224 @@ describe('listMembers', function (): void {
         $members = (new HouseholdService)->listMembers($household);
 
         expect($members)->toHaveCount(2)
-            ->and($members->first()->relationLoaded('user'))->toBeTrue();
+            ->and($members->first()->relationLoaded('user'))->toBeTrue()
+            ->and($members->first()->status)->toBeInstanceOf(HouseholdMemberStatus::class);
     });
 
 });
 
 describe('addMember', function (): void {
 
-    it('allows an Owner to add a new member', function (): void {
+    it('allows an Owner to add a new member by email', function (): void {
+        Notification::fake();
+
         $owner = User::factory()->create();
-        $newUser = User::factory()->create();
         $household = makeHousehold($owner);
 
-        (new HouseholdService)->addMember($household, $owner, $newUser, HouseholdMemberRole::Member);
+        (new HouseholdService)->addMember($household, $owner, 'New Member', 'newmember@example.com', HouseholdMemberRole::Member);
+
+        $newUser = User::where('email', 'newmember@example.com')->first();
+        expect($newUser)->not->toBeNull();
 
         assertDatabaseHas('household_members', [
             'household_id' => $household->id,
             'user_id' => $newUser->id,
             'role' => HouseholdMemberRole::Member->value,
+            'status' => HouseholdMemberStatus::Pending->value,
         ]);
+
+        Notification::assertSentTo($newUser, HouseholdInvitationNotification::class);
     });
 
-    it('allows a Member to add a new member', function (): void {
+    it('allows a Member to add a new member by email', function (): void {
+        Notification::fake();
+
         $owner = User::factory()->create();
         $member = User::factory()->create();
-        $newUser = User::factory()->create();
         $household = makeHousehold($owner, [['user' => $member, 'role' => HouseholdMemberRole::Member]]);
 
-        (new HouseholdService)->addMember($household, $member, $newUser, HouseholdMemberRole::Member);
+        (new HouseholdService)->addMember($household, $member, 'Another User', 'another@example.com', HouseholdMemberRole::Member);
 
+        $newUser = User::where('email', 'another@example.com')->first();
         assertDatabaseHas('household_members', [
             'household_id' => $household->id,
             'user_id' => $newUser->id,
+            'status' => HouseholdMemberStatus::Pending->value,
         ]);
     });
 
-    // Line 150 — Viewer as actor
+    it('adds an existing user by email without creating a new one', function (): void {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $existingUser = User::factory()->create(['email' => 'existing@example.com']);
+        $household = makeHousehold($owner);
+
+        (new HouseholdService)->addMember($household, $owner, $existingUser->name, $existingUser->email, HouseholdMemberRole::Member);
+
+        assertDatabaseHas('household_members', [
+            'household_id' => $household->id,
+            'user_id' => $existingUser->id,
+            'status' => HouseholdMemberStatus::Accepted->value,
+        ]);
+
+        expect(User::where('email', 'existing@example.com')->count())->toBe(1);
+    });
+
     it('throws AccessDeniedHttpException when a Viewer tries to add a member', function (): void {
         $owner = User::factory()->create();
         $viewer = User::factory()->create();
-        $newUser = User::factory()->create();
         $household = makeHousehold($owner, [['user' => $viewer, 'role' => HouseholdMemberRole::Viewer]]);
 
-        expect(fn () => (new HouseholdService)->addMember($household, $viewer, $newUser, HouseholdMemberRole::Member))
+        expect(fn () => (new HouseholdService)->addMember($household, $viewer, 'New', 'new@example.com', HouseholdMemberRole::Member))
             ->toThrow(AccessDeniedHttpException::class, 'You do not have permission to add members.');
     });
 
-    // Line 158 — userToAdd already in a household
     it('throws ConflictHttpException when the user to add already belongs to a household', function (): void {
         $owner = User::factory()->create();
         $otherOwner = User::factory()->create();
         $household = makeHousehold($owner);
         makeHousehold($otherOwner);
 
-        expect(fn () => (new HouseholdService)->addMember($household, $owner, $otherOwner, HouseholdMemberRole::Member))
+        expect(fn () => (new HouseholdService)->addMember($household, $owner, $otherOwner->name, $otherOwner->email, HouseholdMemberRole::Member))
             ->toThrow(ConflictHttpException::class, 'User is already part of a household.');
     });
 
     it('throws AccessDeniedHttpException when a non-member tries to add', function (): void {
         $owner = User::factory()->create();
         $stranger = User::factory()->create();
-        $newUser = User::factory()->create();
         $household = makeHousehold($owner);
 
-        expect(fn () => (new HouseholdService)->addMember($household, $stranger, $newUser, HouseholdMemberRole::Member))
+        expect(fn () => (new HouseholdService)->addMember($household, $stranger, 'New', 'new@test.com', HouseholdMemberRole::Member))
             ->toThrow(AccessDeniedHttpException::class);
+    });
+
+});
+
+describe('joinByCode', function (): void {
+
+    it('creates an accepted membership when joining a household by code', function (): void {
+        $owner = User::factory()->create();
+        $user = User::factory()->create();
+        $household = makeHousehold($owner);
+
+        $joinedHousehold = (new HouseholdService)->joinByCode($user, $household->invitation_code);
+
+        expect($joinedHousehold->id)->toBe($household->id);
+
+        assertDatabaseHas('household_members', [
+            'household_id' => $household->id,
+            'user_id' => $user->id,
+            'role' => HouseholdMemberRole::Member->value,
+            'status' => HouseholdMemberStatus::Accepted->value,
+        ]);
+    });
+
+});
+
+describe('acceptInvitation', function (): void {
+
+    it('accepts a pending invitation for the authenticated user', function (): void {
+        $owner = User::factory()->create();
+        $invitedUser = User::factory()->create();
+        $household = makeHousehold($owner);
+
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $invitedUser->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Pending,
+        ]);
+
+        $acceptedHousehold = (new HouseholdService)->acceptInvitation($invitedUser, $household->invitation_code);
+
+        expect($acceptedHousehold->id)->toBe($household->id);
+
+        assertDatabaseHas('household_members', [
+            'household_id' => $household->id,
+            'user_id' => $invitedUser->id,
+            'status' => HouseholdMemberStatus::Accepted->value,
+        ]);
+    });
+
+});
+
+describe('declineInvitation', function (): void {
+
+    it('deletes a pending invitation for the authenticated user', function (): void {
+        $owner = User::factory()->create();
+        $invitedUser = User::factory()->create();
+        $household = makeHousehold($owner);
+
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $invitedUser->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Pending,
+        ]);
+
+        (new HouseholdService)->declineInvitation($invitedUser, $household->invitation_code);
+
+        assertDatabaseMissing('household_members', [
+            'household_id' => $household->id,
+            'user_id' => $invitedUser->id,
+        ]);
+    });
+
+});
+
+describe('resendInvitation', function (): void {
+
+    it('resends the invitation for a pending member', function (): void {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $pendingUser = User::factory()->create();
+        $household = makeHousehold($owner);
+
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $pendingUser->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Pending,
+        ]);
+
+        (new HouseholdService)->resendInvitation($household, $owner, $pendingUser);
+
+        Notification::assertSentTo($pendingUser, HouseholdInvitationNotification::class);
+    });
+
+    it('throws when the invitation is not pending', function (): void {
+        $owner = User::factory()->create();
+        $acceptedUser = User::factory()->create();
+        $household = makeHousehold($owner);
+
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $acceptedUser->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Accepted,
+        ]);
+
+        expect(fn () => (new HouseholdService)->resendInvitation($household, $owner, $acceptedUser))
+            ->toThrow(ConflictHttpException::class, 'Invitation can only be resent for pending members.');
+    });
+
+    it('throws when a viewer tries to resend an invitation', function (): void {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $pendingUser = User::factory()->create();
+        $household = makeHousehold($owner, [['user' => $viewer, 'role' => HouseholdMemberRole::Viewer]]);
+
+        HouseholdMember::factory()->create([
+            'household_id' => $household->id,
+            'user_id' => $pendingUser->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Pending,
+        ]);
+
+        expect(fn () => (new HouseholdService)->resendInvitation($household, $viewer, $pendingUser))
+            ->toThrow(AccessDeniedHttpException::class, 'You do not have permission to resend invitations.');
     });
 
 });

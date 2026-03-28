@@ -10,4 +10,10 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::post('/refresh', [AuthController::class, 'refresh']);
+
+    Route::prefix('/verify')->group(function (): void {
+        Route::post('/resend-code', [AuthController::class, 'resendValidationCode']);
+        Route::post('/validate-code', [AuthController::class, 'validateCode']);
+        Route::post('/send-validation-code', [AuthController::class, 'sendValidationCode']);
+    });
 });

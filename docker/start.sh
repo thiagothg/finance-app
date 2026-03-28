@@ -3,6 +3,11 @@ set -e
 
 echo "🚀 Starting Finance App with FrankenPHP..."
 
+if [ "$#" -gt 0 ]; then
+    echo "✅ Running custom container command: $*"
+    exec "$@"
+fi
+
 if [ "${APP_ENV}" != "local" ]; then
     # Cache configuration for performance
     echo "⚡ Caching configuration..."

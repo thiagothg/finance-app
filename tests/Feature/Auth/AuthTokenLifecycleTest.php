@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Notifications\AccountValidationCodeNotification;
 use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -66,7 +68,9 @@ describe('register', function (): void {
 
 describe('login', function (): void {
 
-    it('returns a token pair for valid credentials', function (): void {
+    it('sends a verification code for valid credentials', function (): void {
+        Notification::fake();
+
         $user = User::factory()->create(['password' => bcrypt('secret')]);
 
         $result = (new AuthService)->login([
@@ -75,11 +79,13 @@ describe('login', function (): void {
         ]);
 
         expect($result['user']->id)->toBe($user->id)
-            ->and($result['access_token'])->not->toBeEmpty()
-            ->and($result['refresh_token'])->not->toBeEmpty();
+            ->and($result['message'])->toBe('Verification code sent to your email.')
+            ->and($result['verification_expires_at']->isFuture())->toBeTrue();
+
+        Notification::assertSentTo($user, AccountValidationCodeNotification::class);
     });
 
-    it('revokes all existing tokens on new login', function (): void {
+    it('does not issue tokens before verification', function (): void {
         $user = User::factory()->create(['password' => bcrypt('secret')]);
         $user->createToken('old-token');
 
@@ -87,8 +93,7 @@ describe('login', function (): void {
 
         (new AuthService)->login(['email' => $user->email, 'password' => 'secret']);
 
-        // Old token revoked, two new ones created (access + refresh).
-        expect(PersonalAccessToken::where('tokenable_id', $user->id)->count())->toBe(2);
+        expect(PersonalAccessToken::where('tokenable_id', $user->id)->count())->toBe(1);
     });
 
     it('throws ValidationException for wrong password', function (): void {
@@ -105,29 +110,6 @@ describe('login', function (): void {
             'email' => 'nobody@example.com',
             'password' => 'whatever',
         ]))->toThrow(ValidationException::class);
-    });
-
-    it('access token carries the wildcard ability', function (): void {
-        $user = User::factory()->create(['password' => bcrypt('secret')]);
-        $result = (new AuthService)->login(['email' => $user->email, 'password' => 'secret']);
-
-        [$id] = explode('|', $result['access_token']);
-        $token = PersonalAccessToken::find((int) $id);
-
-        /** @var PersonalAccessToken $token */
-        expect($token->abilities)->toBe(['*']);
-    });
-
-    it('refresh token carries only the token:refresh ability', function (): void {
-        $user = User::factory()->create(['password' => bcrypt('secret')]);
-        $result = (new AuthService)->login(['email' => $user->email, 'password' => 'secret']);
-
-        [$id] = explode('|', $result['refresh_token']);
-        $token = PersonalAccessToken::find((int) $id);
-
-        /** @var PersonalAccessToken $token */
-        expect($token->can('token:refresh'))->toBeTrue()
-            ->and($token->can('create:transaction'))->toBeFalse();
     });
 
 });

@@ -1,13 +1,16 @@
 <?php
 
 use App\Enums\HouseholdMemberRole;
+use App\Enums\HouseholdMemberStatus;
 use App\Models\Category;
 use App\Models\Household;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\HouseholdInvitationNotification;
 use App\Services\HouseholdService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 uses(RefreshDatabase::class);
@@ -31,15 +34,22 @@ test('user can list their household with member spending', function () {
     $response->assertStatus(200)
         ->assertJsonPath('meta.total_count', 1)
         ->assertJsonPath('data.0.id', $household->id)
-        ->assertJsonPath('data.0.members_count', 2);
+        ->assertJsonPath('data.0.members_count', 2)
+        ->assertJsonPath('data.0.current_user_membership.user_id', $user1->id)
+        ->assertJsonPath('data.0.current_user_membership.role', HouseholdMemberRole::Owner->value)
+        ->assertJsonPath('data.0.current_user_membership.status', HouseholdMemberStatus::Accepted->value);
 
     $data = $response->json('data.0.members');
 
     $user1Spend = collect($data)->firstWhere('user.id', $user1->id)['total_spend'];
     $user2Spend = collect($data)->firstWhere('user.id', $user2->id)['total_spend'];
+    $user1Status = collect($data)->firstWhere('user.id', $user1->id)['status'];
+    $user2Status = collect($data)->firstWhere('user.id', $user2->id)['status'];
 
     expect((float) $user1Spend)->toBe(100.50);
     expect((float) $user2Spend)->toBe(50.25);
+    expect($user1Status)->toBe(HouseholdMemberStatus::Accepted->value);
+    expect($user2Status)->toBe(HouseholdMemberStatus::Accepted->value);
 });
 
 test('user cannot create multiple households', function () {
@@ -91,9 +101,11 @@ test('member can update household name but viewer cannot', function () {
 
 test('add members enforces single household constraint and permissions', function () {
     /** @var TestCase $this */
+    Notification::fake();
+
     $owner = User::factory()->create();
-    $otherUser = User::factory()->create();
     $viewerUser = User::factory()->create();
+    $newMemberEmail = 'newmember@example.com';
 
     $household = Household::factory()->create(['owner_id' => $owner->id]);
     $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
@@ -101,19 +113,29 @@ test('add members enforces single household constraint and permissions', functio
 
     $this->actingAs($viewerUser)
         ->postJson("/api/v1/households/{$household->id}/members", [
-            'user_id' => $otherUser->id,
+            'name' => 'New Member',
+            'email' => $newMemberEmail,
             'role' => HouseholdMemberRole::Member->value,
         ])
-        ->assertStatus(403);
+        ->assertForbidden();
 
     $this->actingAs($owner)
         ->postJson("/api/v1/households/{$household->id}/members", [
-            'user_id' => $otherUser->id,
+            'name' => 'New Member',
+            'email' => $newMemberEmail,
             'role' => HouseholdMemberRole::Member->value,
         ])
-        ->assertStatus(204);
+        ->assertNoContent();
 
-    $this->assertDatabaseHas('household_members', ['user_id' => $otherUser->id, 'role' => HouseholdMemberRole::Member->value]);
+    $createdUser = User::where('email', $newMemberEmail)->first();
+    expect($createdUser)->not->toBeNull();
+    $this->assertDatabaseHas('household_members', [
+        'user_id' => $createdUser->id,
+        'role' => HouseholdMemberRole::Member->value,
+        'status' => HouseholdMemberStatus::Pending->value,
+    ]);
+
+    Notification::assertSentTo($createdUser, HouseholdInvitationNotification::class);
 
     $thirdUser = User::factory()->create();
     $secondHousehold = Household::factory()->create(['owner_id' => $thirdUser->id]);
@@ -121,10 +143,58 @@ test('add members enforces single household constraint and permissions', functio
 
     $this->actingAs($owner)
         ->postJson("/api/v1/households/{$household->id}/members", [
-            'user_id' => $thirdUser->id,
+            'name' => $thirdUser->name,
+            'email' => $thirdUser->email,
             'role' => HouseholdMemberRole::Member->value,
         ])
         ->assertStatus(409);
+
+    $this->assertDatabaseHas('household_members', [
+        'household_id' => $household->id,
+        'user_id' => $viewerUser->id,
+        'status' => HouseholdMemberStatus::Accepted->value,
+    ]);
+});
+
+test('can resend a pending invitation and rejects non-pending members', function () {
+    /** @var TestCase $this */
+    Notification::fake();
+
+    $owner = User::factory()->create();
+    $pendingUser = User::factory()->create();
+    $acceptedUser = User::factory()->create();
+    $viewer = User::factory()->create();
+
+    $household = Household::factory()->create(['owner_id' => $owner->id]);
+    $household->members()->create(['user_id' => $owner->id, 'role' => HouseholdMemberRole::Owner]);
+    $household->members()->create([
+        'user_id' => $pendingUser->id,
+        'role' => HouseholdMemberRole::Member,
+        'status' => HouseholdMemberStatus::Pending,
+    ]);
+    $household->members()->create([
+        'user_id' => $acceptedUser->id,
+        'role' => HouseholdMemberRole::Member,
+        'status' => HouseholdMemberStatus::Accepted,
+    ]);
+    $household->members()->create([
+        'user_id' => $viewer->id,
+        'role' => HouseholdMemberRole::Viewer,
+    ]);
+
+    $this->actingAs($owner)
+        ->postJson("/api/v1/households/{$household->id}/members/{$pendingUser->id}/resend-invitation")
+        ->assertNoContent();
+
+    Notification::assertSentToTimes($pendingUser, HouseholdInvitationNotification::class, 1);
+
+    $this->actingAs($owner)
+        ->postJson("/api/v1/households/{$household->id}/members/{$acceptedUser->id}/resend-invitation")
+        ->assertStatus(409);
+
+    $this->actingAs($viewer)
+        ->postJson("/api/v1/households/{$household->id}/members/{$pendingUser->id}/resend-invitation")
+        ->assertForbidden();
 });
 
 test('remove members enforces permissions and preserves owner', function () {
@@ -220,7 +290,21 @@ test('can list household members', function () {
     $member = User::factory()->create();
     $household->members()->create(['user_id' => $member->id, 'role' => HouseholdMemberRole::Member]);
 
-    $this->actingAs($owner)->getJson("/api/v1/households/{$household->id}/members")
-        ->assertStatus(200)
-        ->assertJsonCount(2, 'data');
+    $viewer = User::factory()->create();
+    $household->members()->create([
+        'user_id' => $viewer->id,
+        'role' => HouseholdMemberRole::Viewer,
+        'status' => HouseholdMemberStatus::Pending,
+    ]);
+
+    $response = $this->actingAs($owner)->getJson("/api/v1/households/{$household->id}/members");
+
+    $response->assertStatus(200)
+        ->assertJsonCount(3, 'data');
+
+    $members = collect($response->json('data'))->keyBy('user.id');
+
+    expect($members->get($owner->id)['status'])->toBe(HouseholdMemberStatus::Accepted->value)
+        ->and($members->get($member->id)['status'])->toBe(HouseholdMemberStatus::Accepted->value)
+        ->and($members->get($viewer->id)['status'])->toBe(HouseholdMemberStatus::Pending->value);
 });

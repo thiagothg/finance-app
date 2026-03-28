@@ -28,6 +28,9 @@ final class User extends Authenticatable implements AuthenticatableContract, Mus
         'name',
         'email',
         'password',
+        'validation_code',
+        'validation_code_expires_at',
+        'email_verified_at',
     ];
 
     /**
@@ -50,6 +53,7 @@ final class User extends Authenticatable implements AuthenticatableContract, Mus
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'validation_code_expires_at' => 'datetime',
         ];
     }
 

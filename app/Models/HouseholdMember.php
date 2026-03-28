@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\HouseholdMemberRole;
+use App\Enums\HouseholdMemberStatus;
 use Database\Factories\HouseholdMemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int $household_id
  * @property int $user_id
  * @property HouseholdMemberRole $role
+ * @property HouseholdMemberStatus $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Household $household
@@ -28,12 +30,14 @@ final class HouseholdMember extends Model
         'household_id',
         'user_id',
         'role',
+        'status',
     ];
 
     protected function casts(): array
     {
         return [
             'role' => HouseholdMemberRole::class,
+            'status' => HouseholdMemberStatus::class,
         ];
     }
 

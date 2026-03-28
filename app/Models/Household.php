@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read HouseholdMember|null $currentUserMembership
  * @property-read Collection<int, HouseholdMember> $members
  * @property-read User $owner
  */
@@ -29,7 +31,15 @@ final class Household extends Model
     protected $fillable = [
         'name',
         'owner_id',
+        'invitation_code',
     ];
+
+    protected static function booted(): void
+    {
+        self::creating(function (Household $household) {
+            $household->invitation_code = $household->invitation_code ?? str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
+        });
+    }
 
     /*** Relations ***/
 
@@ -43,6 +53,12 @@ final class Household extends Model
     public function members(): HasMany
     {
         return $this->hasMany(HouseholdMember::class);
+    }
+
+    /** @return HasOne<HouseholdMember, $this> */
+    public function currentUserMembership(): HasOne
+    {
+        return $this->hasOne(HouseholdMember::class);
     }
 
     /** @return HasMany<Category, $this> */

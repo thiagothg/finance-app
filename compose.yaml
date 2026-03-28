@@ -101,6 +101,19 @@ services:
             - '/dev/shm:/dev/shm'
         networks:
             - sail
+    horizon:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            APP_ENV: '${APP_ENV:-local}'
+        volumes:
+            - '.:/app'
+        networks:
+            - sail
+        depends_on:
+            - redis
+        command: php artisan horizon
 networks:
     sail:
         driver: bridge

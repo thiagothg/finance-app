@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\User;
+use App\Notifications\AccountValidationCodeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 use function Pest\Faker\fake;
@@ -18,6 +20,8 @@ uses(RefreshDatabase::class);
 */
 
 test('user can login with valid credentials', function () {
+    Notification::fake();
+
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => 'password123',
@@ -30,14 +34,18 @@ test('user can login with valid credentials', function () {
 
     $response->assertSuccessful()
         ->assertJsonStructure([
-            'data' => [
-                'user' => ['id', 'name', 'email'],
-                'access_token',
-                'refresh_token',
-                'access_expires_at',
-                'refresh_expires_at',
-            ],
-        ]);
+            'message',
+            'email',
+            'verification_expires_at',
+        ])
+        ->assertJsonPath('email', 'test@example.com')
+        ->assertJsonPath('message', 'Verification code sent to your email.');
+
+    Notification::assertSentTo($user, AccountValidationCodeNotification::class);
+
+    $user->refresh();
+    expect($user->validation_code)->not->toBeNull()
+        ->and($user->validation_code_expires_at)->not->toBeNull();
 });
 
 test('login fails with invalid credentials', function () {

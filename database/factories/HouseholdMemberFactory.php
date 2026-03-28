@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\HouseholdMemberRole;
+use App\Enums\HouseholdMemberStatus;
 use App\Models\Household;
 use App\Models\HouseholdMember;
 use App\Models\User;
@@ -19,6 +20,7 @@ class HouseholdMemberFactory extends Factory
             'household_id' => Household::factory(),
             'user_id' => User::factory(),
             'role' => fake()->randomElement([HouseholdMemberRole::Owner, HouseholdMemberRole::Member, HouseholdMemberRole::Viewer]),
+            'status' => HouseholdMemberStatus::Accepted,
         ];
     }
 }

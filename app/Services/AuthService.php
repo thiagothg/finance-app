@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\AccountValidationCodeNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -31,10 +32,10 @@ final readonly class AuthService
     }
 
     /**
-     * Validate credentials and return a token pair.
+     * Validate credentials, generate a verification code, and email it to the user.
      *
      * @param  array<string, mixed>  $data
-     * @return array{user: User, access_token: string, refresh_token: string, access_expires_at: Carbon, refresh_expires_at: Carbon}
+     * @return array{user: User, message: string, verification_expires_at: Carbon}
      *
      * @throws ValidationException
      */
@@ -48,10 +49,13 @@ final readonly class AuthService
             ]);
         }
 
-        // Revoke all existing tokens on fresh login for security.
-        $user->tokens()->delete();
+        $verificationExpiresAt = $this->generateValidationCode($user);
 
-        return $this->createTokenPair($user);
+        return [
+            'user' => $user,
+            'message' => 'Verification code sent to your email.',
+            'verification_expires_at' => $verificationExpiresAt,
+        ];
     }
 
     /**
@@ -112,6 +116,7 @@ final readonly class AuthService
             // Token expired but user was recently active — silent renewal proceeds.
         }
 
+        /** @var User $user */
         $user = $tokenModel->tokenable;
 
         // Revoke the used refresh token and all existing access tokens.
@@ -154,5 +159,66 @@ final readonly class AuthService
             'access_expires_at' => $accessExpiresAt,
             'refresh_expires_at' => $refreshExpiresAt,
         ];
+    }
+
+    /**
+     * Generate a 6-digit validation code and send it via notification.
+     */
+    public function generateValidationCode(User $user): Carbon
+    {
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = now()->addMinutes(15);
+
+        $user->update([
+            'validation_code' => Hash::make($code),
+            'validation_code_expires_at' => $expiresAt,
+        ]);
+
+        $user->notify(new AccountValidationCodeNotification($code));
+
+        return $expiresAt;
+    }
+
+    /**
+     * Verify a validation code and mark the email as verified.
+     *
+     * @return array{user: User, access_token: string, refresh_token: string, access_expires_at: Carbon, refresh_expires_at: Carbon}
+     *
+     * @throws ValidationException
+     */
+    public function verifyValidationCode(string $email, string $code): array
+    {
+        $user = User::where('email', $email)->first();
+
+        if (! $user || ! $user->validation_code) {
+            throw ValidationException::withMessages([
+                'code' => ['Invalid validation code.'],
+            ]);
+        }
+
+        /** @var Carbon|null $expiresAt */
+        $expiresAt = $user->validation_code_expires_at;
+
+        if ($expiresAt?->isPast()) {
+            throw ValidationException::withMessages([
+                'code' => ['Validation code has expired.'],
+            ]);
+        }
+
+        if (! Hash::check($code, $user->validation_code)) {
+            throw ValidationException::withMessages([
+                'code' => ['Invalid validation code.'],
+            ]);
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+            'validation_code' => null,
+            'validation_code_expires_at' => null,
+        ]);
+
+        $user->tokens()->delete();
+
+        return $this->createTokenPair($user);
     }
 }

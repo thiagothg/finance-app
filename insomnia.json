@@ -1,0 +1,972 @@
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2026-03-28T12:00:00.000Z",
+    "__export_source": "insomnia.desktop.app:v2023.5.8",
+    "resources": [
+        {
+            "_id": "wrk_finance_app",
+            "parentId": null,
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Finance App API",
+            "description": "",
+            "scope": "collection",
+            "_type": "workspace"
+        },
+        {
+            "_id": "env_local",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Local",
+            "data": {
+                "base_url": "http://localhost:8000/api",
+                "token": "YOUR_BEARER_TOKEN_HERE"
+            },
+            "dataPropertyOrder": {
+                "&": [
+                    "base_url",
+                    "token"
+                ]
+            },
+            "color": null,
+            "isPrivate": false,
+            "metaSortKey": 1710622200000,
+            "_type": "environment"
+        },
+        {
+            "_id": "fld_auth",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Auth",
+            "description": "",
+            "environment": [],
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1710622200000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_register",
+            "parentId": "fld_auth",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/auth/register",
+            "name": "Register",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"Thiago\",\n\t\"email\": \"thiago@example.com\",\n\t\"password\": \"password\",\n\t\"password_confirmation\": \"password\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710622200000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_login",
+            "parentId": "fld_auth",
+            "modified": 1774699200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/auth/login",
+            "name": "Login",
+            "description": "Step 1 of login. Valid credentials send a 6-digit verification code by email. Use /auth/validate-code to receive tokens.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"email\": \"thiago@example.com\",\n\t\"password\": \"password\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710622100000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_logout",
+            "parentId": "fld_auth",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/auth/logout",
+            "name": "Logout",
+            "description": "",
+            "method": "POST",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_refresh_token",
+            "parentId": "fld_auth",
+            "modified": 1743033662000,
+            "created": 1743033662000,
+            "url": "{{ _.base_url }}/auth/refresh",
+            "name": "Refresh Token",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"refresh_token\": \"\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710621950000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_send_validation_code",
+            "parentId": "fld_auth",
+            "modified": 1743033662000,
+            "created": 1743033662000,
+            "url": "{{ _.base_url }}/auth/send-validation-code",
+            "name": "Send Validation Code",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"email\": \"thiago@example.com\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710621925000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_resend_validation_code",
+            "parentId": "fld_auth",
+            "modified": 1774699200000,
+            "created": 1774699200000,
+            "url": "{{ _.base_url }}/auth/resend-validation-code",
+            "name": "Resend Validation Code",
+            "description": "Generate a new 6-digit verification code and send it again by email.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"email\": \"thiago@example.com\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710621912500,
+            "_type": "request"
+        },
+        {
+            "_id": "req_validate_code",
+            "parentId": "fld_auth",
+            "modified": 1774699200000,
+            "created": 1743033662000,
+            "url": "{{ _.base_url }}/auth/validate-code",
+            "name": "Validate Code",
+            "description": "Step 2 of login. Submit the emailed 6-digit code to receive access and refresh tokens.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"email\": \"thiago@example.com\",\n\t\"code\": \"123456\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710621900000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_households",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Households",
+            "description": "",
+            "environment": [],
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1710622100000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_list_households",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households",
+            "name": "List Households",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622200000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_store_household",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households",
+            "name": "Create Household",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"My New Household\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622100000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_update_household",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households/1",
+            "name": "Update Household Name",
+            "description": "",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"Our Updated Home\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_list_members",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households/1/members",
+            "name": "List Members",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621900000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_add_member",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households/1/members",
+            "name": "Add Member",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"user_id\": 2,\n\t\"role\": \"Member\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621800000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_remove_member",
+            "parentId": "fld_households",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/households/1/members/2",
+            "name": "Remove Member",
+            "description": "",
+            "method": "DELETE",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621700000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_join_household",
+            "parentId": "fld_households",
+            "modified": 1743033662000,
+            "created": 1743033662000,
+            "url": "{{ _.base_url }}/households/join",
+            "name": "Join Household",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"invitation_code\": \"12345678\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621650000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_categories",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Categories",
+            "description": "",
+            "environment": [],
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1710622000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_list_categories",
+            "parentId": "fld_categories",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/categories",
+            "name": "List Categories",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [
+                {
+                    "name": "type",
+                    "value": "Expense"
+                }
+            ],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622200000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_store_category",
+            "parentId": "fld_categories",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/categories",
+            "name": "Create Category",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"Rent\",\n\t\"type\": \"Expense\",\n\t\"icon\": \"home\",\n\t\"color\": \"#FF5733\",\n\t\"budget\": \"1200.00\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622100000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_get_category",
+            "parentId": "fld_categories",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/categories/1",
+            "name": "Get Category",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_update_category",
+            "parentId": "fld_categories",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/categories/1",
+            "name": "Update Category",
+            "description": "",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"House Rent\",\n\t\"type\": \"Expense\",\n\t\"icon\": \"home\",\n\t\"color\": \"#C70039\",\n\t\"budget\": \"1300.00\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621900000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_delete_category",
+            "parentId": "fld_categories",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/categories/1",
+            "name": "Delete Category",
+            "description": "",
+            "method": "DELETE",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621800000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_accounts",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Accounts",
+            "description": "",
+            "environment": [],
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1710621950000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_list_accounts",
+            "parentId": "fld_accounts",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/accounts",
+            "name": "List Accounts",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622200000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_store_account",
+            "parentId": "fld_accounts",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/accounts",
+            "name": "Create Account",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"My Checking Account\",\n\t\"type\": \"Checking\",\n\t\"initial_balance\": 1000.00,\n\t\"currency\": \"BRL\",\n\t\"bank\": \"Nubank\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622100000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_get_account",
+            "parentId": "fld_accounts",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/accounts/1",
+            "name": "Get Account",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_update_account",
+            "parentId": "fld_accounts",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/accounts/1",
+            "name": "Update Account",
+            "description": "",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"My Savings Account\",\n\t\"type\": \"Savings\",\n\t\"initial_balance\": 5000.00,\n\t\"currency\": \"BRL\",\n\t\"bank\": \"Nubank\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621900000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_delete_account",
+            "parentId": "fld_accounts",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/accounts/1",
+            "name": "Delete Account",
+            "description": "",
+            "method": "DELETE",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710621800000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_misc",
+            "parentId": "wrk_finance_app",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "name": "Misc",
+            "description": "",
+            "environment": [],
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1710621700000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_me",
+            "parentId": "fld_misc",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/user/me",
+            "name": "Me",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1710622200000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_health",
+            "parentId": "fld_misc",
+            "modified": 1710622200000,
+            "created": 1710622200000,
+            "url": "{{ _.base_url }}/health",
+            "name": "Health Check",
+            "description": "",
+            "method": "GET",
+            "body": [],
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": [],
+            "metaSortKey": -1710622100000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_transactions",
+            "parentId": "wrk_finance_app",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "name": "Transactions",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1773788839900,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_list_transactions",
+            "parentId": "fld_transactions",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "url": "{{ _.base_url }}/transactions",
+            "name": "List Transactions",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1773788840000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_store_transaction",
+            "parentId": "fld_transactions",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "url": "{{ _.base_url }}/transactions",
+            "name": "Create Transaction",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n    \"amount\": 150,\n    \"type\": \"Expense\",\n    \"category_id\": 1,\n    \"account_id\": 1,\n    \"spender_user_id\": 1,\n    \"transaction_at\": \"2026-03-14 10:00:00\",\n    \"description\": \"Groceries\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1773788839900,
+            "_type": "request"
+        },
+        {
+            "_id": "req_get_transaction",
+            "parentId": "fld_transactions",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "url": "{{ _.base_url }}/transactions/1",
+            "name": "Get Transaction",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1773788839800,
+            "_type": "request"
+        },
+        {
+            "_id": "req_update_transaction",
+            "parentId": "fld_transactions",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "url": "{{ _.base_url }}/transactions/1",
+            "name": "Update Transaction",
+            "description": "",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n    \"amount\": 200,\n    \"type\": \"Expense\",\n    \"category_id\": 1,\n    \"account_id\": 1,\n    \"spender_user_id\": 1,\n    \"transaction_at\": \"2026-03-14 10:00:00\",\n    \"description\": \"Groceries Updated\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1773788839700,
+            "_type": "request"
+        },
+        {
+            "_id": "req_delete_transaction",
+            "parentId": "fld_transactions",
+            "modified": 1773788840000,
+            "created": 1773788840000,
+            "url": "{{ _.base_url }}/transactions/1",
+            "name": "Delete Transaction",
+            "description": "",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.token }}"
+            },
+            "metaSortKey": -1773788839600,
+            "_type": "request"
+        }
+    ]
+}

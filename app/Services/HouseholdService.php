@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\HouseholdMemberRole;
+use App\Enums\HouseholdMemberStatus;
 use App\Models\Household;
 use App\Models\HouseholdMember;
 use App\Models\User;
+use App\Notifications\HouseholdInvitationNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -54,6 +58,10 @@ final readonly class HouseholdService
             $member->setAttribute('total_spend', $total);
         }
 
+        /** @var HouseholdMember|null $currentUserMembership */
+        $currentUserMembership = $members->firstWhere('user_id', $user->id);
+        $household->setRelation('currentUserMembership', $currentUserMembership);
+
         return new Collection([$household]);
     }
 
@@ -77,6 +85,7 @@ final readonly class HouseholdService
                 $household->members()->create([
                     'user_id' => $user->id,
                     'role' => HouseholdMemberRole::Owner,
+                    'status' => HouseholdMemberStatus::Accepted,
                 ]);
 
                 return $household;
@@ -109,9 +118,9 @@ final readonly class HouseholdService
     }
 
     /**
-     * Add a member to the household
+     * Add a member to the household by creating or finding a user by email.
      */
-    public function addMember(Household $household, User $actor, User $userToAdd, HouseholdMemberRole $role): void
+    public function addMember(Household $household, User $actor, string $name, string $email, HouseholdMemberRole $role): void
     {
         /** @var HouseholdMember|null $actorMember */
         $actorMember = $household->members()->where('user_id', $actor->id)->first();
@@ -120,14 +129,57 @@ final readonly class HouseholdService
             throw new AccessDeniedHttpException('You do not have permission to add members.');
         }
 
-        if ($userToAdd->householdMember()->exists()) {
+        $userToAdd = User::where('email', $email)->first();
+
+        if ($userToAdd && $userToAdd->householdMember()->exists()) {
             throw new ConflictHttpException('User is already part of a household.');
         }
 
-        $household->members()->create([
-            'user_id' => $userToAdd->id,
-            'role' => $role,
-        ]);
+        DB::transaction(function () use ($household, $actor, $name, $email, $role, $userToAdd) {
+            if (! $userToAdd) {
+                $userToAdd = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => Hash::make(Str::random(32)),
+                ]);
+            }
+
+            $household->members()->create([
+                'user_id' => $userToAdd->id,
+                'role' => $role,
+                'status' => $userToAdd->wasRecentlyCreated
+                    ? HouseholdMemberStatus::Pending
+                    : HouseholdMemberStatus::Accepted,
+            ]);
+
+            $userToAdd->notify(new HouseholdInvitationNotification($household, $actor->name));
+        });
+    }
+
+    /**
+     * Resend a household invitation to a pending member.
+     */
+    public function resendInvitation(Household $household, User $actor, User $userToNotify): void
+    {
+        /** @var HouseholdMember|null $actorMember */
+        $actorMember = $household->members()->where('user_id', $actor->id)->first();
+
+        if (! $actorMember || $actorMember->role === HouseholdMemberRole::Viewer) {
+            throw new AccessDeniedHttpException('You do not have permission to resend invitations.');
+        }
+
+        /** @var HouseholdMember|null $memberToNotify */
+        $memberToNotify = $household->members()->where('user_id', $userToNotify->id)->first();
+
+        if (! $memberToNotify) {
+            throw new NotFoundHttpException('User is not a member of this household.');
+        }
+
+        if ($memberToNotify->status !== HouseholdMemberStatus::Pending) {
+            throw new ConflictHttpException('Invitation can only be resent for pending members.');
+        }
+
+        $userToNotify->notify(new HouseholdInvitationNotification($household, $actor->name));
     }
 
     /**
@@ -163,5 +215,90 @@ final readonly class HouseholdService
         }
 
         $memberToRemove->delete();
+    }
+
+    /**
+     * Join a household using an invitation code
+     */
+    public function joinByCode(User $user, string $invitationCode): Household
+    {
+        if ($user->householdMember()->exists()) {
+            throw new ConflictHttpException('User is already part of a household.');
+        }
+
+        /** @var Household|null $household */
+        $household = Household::where('invitation_code', $invitationCode)->first();
+
+        if (! $household) {
+            throw new NotFoundHttpException('Invalid invitation code.');
+        }
+
+        $household->members()->create([
+            'user_id' => $user->id,
+            'role' => HouseholdMemberRole::Member,
+            'status' => HouseholdMemberStatus::Accepted,
+        ]);
+
+        return $household;
+    }
+
+    /**
+     * Accept a pending household invitation using the invitation code.
+     */
+    public function acceptInvitation(User $user, string $invitationCode): Household
+    {
+        /** @var Household|null $household */
+        $household = Household::where('invitation_code', $invitationCode)->first();
+
+        if (! $household) {
+            throw new NotFoundHttpException('Invalid invitation code.');
+        }
+
+        /** @var HouseholdMember|null $membership */
+        $membership = $household->members()->where('user_id', $user->id)->first();
+
+        if (! $membership) {
+            throw new NotFoundHttpException('Invitation not found for this user.');
+        }
+
+        if ($membership->status !== HouseholdMemberStatus::Pending) {
+            throw new ConflictHttpException('Invitation has already been processed.');
+        }
+
+        $membership->update([
+            'status' => HouseholdMemberStatus::Accepted,
+        ]);
+
+        $household->loadCount('members')->load('members.user');
+        $membership->refresh();
+        $household->setRelation('currentUserMembership', $membership);
+
+        return $household;
+    }
+
+    /**
+     * Decline a pending household invitation using the invitation code.
+     */
+    public function declineInvitation(User $user, string $invitationCode): void
+    {
+        /** @var Household|null $household */
+        $household = Household::where('invitation_code', $invitationCode)->first();
+
+        if (! $household) {
+            throw new NotFoundHttpException('Invalid invitation code.');
+        }
+
+        /** @var HouseholdMember|null $membership */
+        $membership = $household->members()->where('user_id', $user->id)->first();
+
+        if (! $membership) {
+            throw new NotFoundHttpException('Invitation not found for this user.');
+        }
+
+        if ($membership->status !== HouseholdMemberStatus::Pending) {
+            throw new ConflictHttpException('Invitation has already been processed.');
+        }
+
+        $membership->delete();
     }
 }

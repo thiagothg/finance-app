@@ -16,6 +16,7 @@ class HouseholdFactory extends Factory
         return [
             'name' => fake()->company().' Household',
             'owner_id' => User::factory(),
+            'invitation_code' => $this->faker->unique()->numerify('########'),
         ];
     }
 }

@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
-use App\Enums\HouseholdMemberRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class AddHouseholdMemberRequest extends FormRequest
+final class SendValidationCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,9 +18,7 @@ class AddHouseholdMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', Rule::enum(HouseholdMemberRole::class)],
+            'email' => ['required', 'email', 'exists:users,email'],
         ];
     }
 }
