@@ -1,3 +1,5 @@
+name: finance-app
+
 services:
     app:
         build:
