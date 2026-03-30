@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "Casa"
+  },
+  "common": {
+    "loading": "Carregando..."
+  },
+  "theme": {
+    "toggle": "Alternar tema"
+  },
+  "dashboard": {
+    "badge": "Sessao autenticada",
+    "title": "Ola, {{name}}",
+    "subtitle": "Acompanhe o essencial das financas da sua familia em um unico espaco seguro.",
+    "overview_title": "Visao geral",
+    "overview_subtitle": "Pronto para a proxima feature.",
+    "placeholder": "Use este espaco para saldos, transacoes recentes, lembretes de contas ou as primeiras acoes que um usuario autenticado deve ver.",
+    "next_steps_title": "O que pode entrar aqui",
+    "next_steps_copy": "Resumo de orcamento, cartoes de conta, contas recorrentes e atividade recente combinam bem com este shell autenticado.",
+    "account_title": "Conta",
+    "name": "Nome",
+    "email": "E-mail",
+    "security_title": "Acesso protegido",
+    "security_copy": "Seu login exige uma segunda etapa de verificacao antes de liberar o acesso ao aplicativo.",
+    "stats": {
+      "cash_value": "$12.4k",
+      "cash_label": "Disponivel entre as contas",
+      "savings_value": "$4.8k",
+      "savings_label": "Reservado para metas",
+      "security_value": "2 etapas",
+      "security_label": "Verificacao ativa"
+    }
+  },
+  "app_shell": {
+    "workspace": "Workspace",
+    "workspace_name": "Family Finance",
+    "workspace_copy": "Use a barra lateral para navegar na area privada. Adicione mais rotas protegidas aqui conforme a aplicacao crescer.",
+    "secure_session": "Sessao segura",
+    "collapse": {
+      "collapse": "Recolher menu",
+      "expand": "Expandir menu"
+    },
+    "navigation": {
+      "main_menu": "Menu principal",
+      "dashboard": "Dashboard",
+      "planning": "Planejamento",
+      "overview": "Visao geral",
+      "security": "Seguranca"
+    },
+    "header": {
+      "caption": "Aplicacao autenticada",
+      "dashboard": "Dashboard",
+      "active_user": "Usuario ativo"
+    }
+  },
+  "auth": {
+    "logout": "Sair",
+    "layout": {
+      "badge": "Fluxo de acesso protegido",
+      "title": "Acesso seguro para cada conta da familia.",
+      "subtitle": "Um layout dividido para login e validacao de codigo antes de entrar no aplicativo.",
+      "feature_title": "Verificacao em duas etapas",
+      "feature_copy": "Mantenha a marca e o contexto visiveis de um lado enquanto os formularios ficam focados e simples do outro."
+    },
+    "login": {
+      "eyebrow": "Entrar",
+      "title_line_1": "Bem-vindo",
+      "title_line_2": "de volta.",
+      "subtitle": "Entre para gerenciar as financas da sua familia.",
+      "email": "E-mail",
+      "email_placeholder": "Endereco de e-mail",
+      "password": "Senha",
+      "password_placeholder": "Senha",
+      "submit": "Entrar",
+      "security_hint": "Sua sessao e protegida com autenticacao por token do Laravel Sanctum.",
+      "errors": {
+        "email_invalid": "Digite um e-mail valido",
+        "password_invalid": "Digite uma senha valida",
+        "password_min": "A senha deve ter pelo menos 8 caracteres",
+        "invalid_credentials": "E-mail ou senha incorretos",
+        "too_many_attempts": "Muitas tentativas de login. Tente novamente em instantes.",
+        "unexpected": "Algo deu errado. Tente novamente."
+      }
+    },
+    "validate_code": {
+      "eyebrow": "Verificacao",
+      "title": "Valide seu codigo de acesso",
+      "subtitle": "Voce entrou como {{email}}. Digite o codigo de verificacao para continuar.",
+      "sent_to": "Enviamos o codigo de verificacao para {{email}}.",
+      "expires_at": "O codigo expira em {{value}}.",
+      "code": "Codigo de verificacao",
+      "submit": "Validar codigo",
+      "cancel": "Voltar",
+      "resend": "Reenviar codigo",
+      "errors": {
+        "code_invalid": "Digite um codigo de verificacao valido com 6 digitos",
+        "unexpected": "Algo deu errado. Tente novamente."
+      }
+    }
+  }
+}

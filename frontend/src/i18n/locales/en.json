@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "Casa"
+  },
+  "common": {
+    "loading": "Loading..."
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "dashboard": {
+    "badge": "Authenticated session",
+    "title": "Hello, {{name}}",
+    "subtitle": "Track the essentials of your household finances from one secure workspace.",
+    "overview_title": "Overview",
+    "overview_subtitle": "Ready for your next feature.",
+    "placeholder": "Use this space for balances, latest transactions, billing reminders, or the first actions you want a signed-in user to take.",
+    "next_steps_title": "What belongs here next",
+    "next_steps_copy": "Budget summaries, account cards, recurring bills, and recent activity all fit naturally into this authenticated shell.",
+    "account_title": "Account",
+    "name": "Name",
+    "email": "Email",
+    "security_title": "Protected access",
+    "security_copy": "Your login requires a second verification step before granting access to the application.",
+    "stats": {
+      "cash_value": "$12.4k",
+      "cash_label": "Available across accounts",
+      "savings_value": "$4.8k",
+      "savings_label": "Reserved for goals",
+      "security_value": "2-step",
+      "security_label": "Verification active"
+    }
+  },
+  "app_shell": {
+    "workspace": "Workspace",
+    "workspace_name": "Family Finance",
+    "workspace_copy": "Use the sidebar to move through your private area. Add more protected routes here as the application grows.",
+    "secure_session": "Secure session",
+    "collapse": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    },
+    "navigation": {
+      "main_menu": "Main menu",
+      "dashboard": "Dashboard",
+      "planning": "Planning",
+      "overview": "Overview",
+      "security": "Security"
+    },
+    "header": {
+      "caption": "Authenticated application",
+      "dashboard": "Dashboard",
+      "active_user": "Active user"
+    }
+  },
+  "auth": {
+    "logout": "Log out",
+    "layout": {
+      "badge": "Protected access flow",
+      "title": "Secure access for every family account.",
+      "subtitle": "A clear split-screen layout for signing in and validating codes before entering the app.",
+      "feature_title": "Two-step verification",
+      "feature_copy": "Keep the brand and context visible on one side while forms stay focused and easy to complete on the other."
+    },
+    "login": {
+      "eyebrow": "Sign in",
+      "title_line_1": "Welcome",
+      "title_line_2": "back.",
+      "subtitle": "Sign in to manage your family finances.",
+      "email": "Email",
+      "email_placeholder": "Email address",
+      "password": "Password",
+      "password_placeholder": "Password",
+      "submit": "Sign in",
+      "security_hint": "Your session is secured with Laravel Sanctum token authentication.",
+      "errors": {
+        "email_invalid": "Enter a valid email address",
+        "password_invalid": "Enter a valid password",
+        "password_min": "Password must be at least 8 characters",
+        "invalid_credentials": "Incorrect email or password",
+        "too_many_attempts": "Too many login attempts. Please try again in a moment.",
+        "unexpected": "Something went wrong. Please try again."
+      }
+    },
+    "validate_code": {
+      "eyebrow": "Verification",
+      "title": "Validate your access code",
+      "subtitle": "You are signed in as {{email}}. Enter the verification code to continue.",
+      "sent_to": "We sent the verification code to {{email}}.",
+      "expires_at": "Code expires at {{value}}.",
+      "code": "Verification code",
+      "submit": "Validate code",
+      "cancel": "Back",
+      "resend": "Resend code",
+      "errors": {
+        "code_invalid": "Enter a valid 6-digit verification code",
+        "unexpected": "Something went wrong. Please try again."
+      }
+    }
+  }
+}
