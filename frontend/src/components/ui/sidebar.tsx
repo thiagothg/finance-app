@@ -666,10 +666,23 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean;
   }
 >(({ className, showIcon = false, ...props }, ref) => {
+  // Seeded random number generator
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const [seed, setSeed] = React.useState(0);
+
+  React.useEffect(() => {
+    setSeed(Date.now());
+  }, []);
+
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
+    const random = seededRandom(seed);
+    return `${Math.floor(random * 40) + 50}%`;
+  }, [seed]);
 
   return (
     <div

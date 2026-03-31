@@ -2,8 +2,30 @@
   "app": {
     "name": "Casa"
   },
+  "categories": {
+    "title": "Categorias",
+    "addCategory": "Adicionar Categoria",
+    "editCategory": "Editar Categoria",
+    "newCategory": "Nova Categoria",
+    "expense": "Despesa",
+    "income": "Receita",
+    "name": "Nome",
+    "icon": "Ícone",
+    "color": "Cor",
+    "budget": "Orçamento",
+    "type": "Tipo",
+    "typeExpense": "Despesa",
+    "typeIncome": "Receita",
+    "created": "Categoria criada com sucesso.",
+    "updated": "Categoria atualizada com sucesso.",
+    "deleted": "Categoria excluída com sucesso."
+  },
   "common": {
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "create": "Criar"
   },
   "theme": {
     "toggle": "Alternar tema"

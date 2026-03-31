@@ -2,8 +2,30 @@
   "app": {
     "name": "Casa"
   },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "expense": "Expense",
+    "income": "Income",
+    "name": "Name",
+    "icon": "Icon",
+    "color": "Color",
+    "budget": "Budget",
+    "type": "Type",
+    "typeExpense": "Expense",
+    "typeIncome": "Income",
+    "created": "Category created successfully.",
+    "updated": "Category updated successfully.",
+    "deleted": "Category deleted successfully."
+  },
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "create": "Create"
   },
   "theme": {
     "toggle": "Toggle theme"

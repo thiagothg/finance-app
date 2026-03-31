@@ -14,13 +14,16 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (body: LoginInput): Promise<VerificationChallenge> => {
-      const response = await api.post<VerificationChallenge>("/auth/login", body);
+      const response = await api.post<VerificationChallenge>(
+        "/auth/login",
+        body,
+      );
 
       return response.data;
     },
     onSuccess: (challenge) => {
       setPendingVerification(challenge);
-      navigate("/validate-code", { replace: true });
+      navigate("/auth/validate-code", { replace: true });
     },
   });
 }

@@ -17,7 +17,7 @@ export default function LoginPage(): React.JSX.Element {
   }
 
   if (pendingVerification) {
-    return <Navigate to="/validate-code" replace />;
+    return <Navigate to="/auth/validate-code" replace />;
   }
 
   return (

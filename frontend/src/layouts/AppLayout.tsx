@@ -3,11 +3,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/store/authStore";
 
 export function AppLayout(): React.JSX.Element {
@@ -17,7 +13,7 @@ export function AppLayout(): React.JSX.Element {
   const user = useAuthStore((state) => state.user);
 
   if (!accessToken) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return (

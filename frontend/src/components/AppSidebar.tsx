@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   User2,
   LayoutDashboard,
+  Tags,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -54,6 +55,11 @@ const sidebarSections = [
         to: "/dashboard",
         icon: LayoutDashboard,
         labelKey: "app_shell.navigation.dashboard",
+      },
+      {
+        to: "/categories",
+        icon: Tags,
+        labelKey: "categories.title",
       },
       {
         icon: FolderKanban,

@@ -6,10 +6,12 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthStore } from "@/store/authStore";
+import { Toaster } from "./components/ui/sonner";
 
 const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
 const ValidateCodePage = lazy(() => import("@/pages/auth/ValidateCodePage"));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
+const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,10 +33,10 @@ function HomeRedirect(): React.JSX.Element {
   }
 
   if (pendingVerification) {
-    return <Navigate to="/validate-code" replace />;
+    return <Navigate to="/auth/validate-code" replace />;
   }
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/auth/login" replace />;
 }
 
 function App(): React.JSX.Element {
@@ -50,18 +52,23 @@ function App(): React.JSX.Element {
         <BrowserRouter>
           <Routes>
             <Route element={<AuthLayout />}>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/validate-code" element={<ValidateCodePage />} />
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route
+                path="/auth/validate-code"
+                element={<ValidateCodePage />}
+              />
             </Route>
 
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/categories" element={<CategoriesPage />} />
             </Route>
 
             <Route path="/" element={<HomeRedirect />} />
           </Routes>
         </BrowserRouter>
       </Suspense>
+      <Toaster />
     </QueryClientProvider>
   );
 }
