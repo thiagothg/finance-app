@@ -1,8 +1,8 @@
-export { LoginForm } from "./components/LoginForm";
-export { ValidateCodeForm } from "./components/ValidateCodeForm";
-export { useLogin } from "./hooks/useLogin";
-export { useResendValidationCode } from "./hooks/useResendValidationCode";
-export { useValidateCode } from "./hooks/useValidateCode";
+export { LoginForm } from "./login/components/LoginForm";
+export { OtpForm } from "./otp/components/OtpForm";
+export { useLogin } from "./login/hooks/useLogin";
+export { useResendValidationCode } from "./otp/hooks/useResendValidationCode";
+export { useValidateCode } from "./otp/hooks/useValidateCode";
 export type {
   AuthPayload,
   AuthResponse,

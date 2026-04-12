@@ -67,7 +67,9 @@
       "dashboard": "Dashboard",
       "planning": "Planejamento",
       "overview": "Visao geral",
-      "security": "Seguranca"
+      "security": "Seguranca",
+      "settings": "Configurações",
+      "management": "Gerenciar"
     },
     "header": {
       "caption": "Aplicacao autenticada",

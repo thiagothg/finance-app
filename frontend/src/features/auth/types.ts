@@ -1,34 +1,44 @@
-export interface User {
-  id: number;
+import { type BaseEntity } from "@/shared/types/base";
+
+export type UserPreferences = {
+  language?: string;
+  date_format?: string;
+  timezone?: string;
+  currency_display?: string;
+  display_name?: string;
+};
+
+export interface User extends BaseEntity {
   name: string;
   email: string;
-  created_at: string;
+  avatar?: string;
+  preferences?: UserPreferences;
 }
 
-export interface LoginInput {
+export type LoginInput = {
   email: string;
   password: string;
-}
+};
 
-export interface VerificationChallenge {
+export type VerificationChallenge = {
   message: string;
   email: string;
   verification_expires_at: string;
-}
+};
 
-export interface ValidateCodeInput {
+export type ValidateCodeInput = {
   email: string;
   code: string;
-}
+};
 
-export interface AuthPayload {
+export type AuthPayload = {
   user: User;
   access_token: string;
   refresh_token: string;
   access_expires_at: string;
   refresh_expires_at: string;
-}
+};
 
-export interface AuthResponse {
+export type AuthResponse = {
   data: AuthPayload;
-}
+};

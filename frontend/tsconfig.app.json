@@ -29,5 +29,5 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/pages/settings"]
+  "exclude": ["node_modules", "dist"]
 }

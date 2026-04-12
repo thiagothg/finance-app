@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface ScreenLayoutProps {
@@ -17,11 +16,9 @@ export default function ScreenLayout({
   children,
   className,
 }: ScreenLayoutProps) {
-  const navigate = useNavigate();
-
   const defaultLeftAction = (
     <button
-      onClick={() => navigate(-1)}
+      onClick={() => window.history.back()}
       className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center md:hidden"
     >
       <ArrowLeft className="w-4 h-4 text-foreground" />

@@ -1,8 +1,7 @@
 import { Moon, SunMedium } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
+import { useTheme } from "@/context/theme-provider";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/useTheme";
 
 interface ThemeToggleProps {
   className?: string;
@@ -12,7 +11,7 @@ export function ThemeToggle({
   className,
 }: ThemeToggleProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
@@ -21,7 +20,7 @@ export function ThemeToggle({
       variant="ghost"
       size="icon"
       className={`border border-border/70 bg-card/88 text-foreground shadow-sm backdrop-blur hover:bg-accent hover:text-accent-foreground dark:border-border/80 dark:bg-card/80 ${className ?? ""}`}
-      onClick={toggleTheme}
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       aria-label={t("theme.toggle")}
       title={t("theme.toggle")}
     >

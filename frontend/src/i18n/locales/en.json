@@ -2,6 +2,9 @@
   "app": {
     "name": "Casa"
   },
+  "accounts": {
+    "title": "Accounts"
+  },
   "categories": {
     "title": "Categories",
     "addCategory": "Add Category",
@@ -67,7 +70,9 @@
       "dashboard": "Dashboard",
       "planning": "Planning",
       "overview": "Overview",
-      "security": "Security"
+      "security": "Security",
+      "settings": "Settings",
+      "management": "Manage"
     },
     "header": {
       "caption": "Authenticated application",
